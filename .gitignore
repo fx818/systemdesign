@@ -4,3 +4,4 @@ dist
 renders/
 test-results/
 playwright-report/
+app/public/videos/
