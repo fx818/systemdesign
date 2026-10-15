@@ -77,7 +77,7 @@ const initialState = () => ({
 
 export const useGame = create<GameState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       ...initialState(),
 
       addXp: (amount) =>

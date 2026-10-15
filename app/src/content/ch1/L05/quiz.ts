@@ -1,0 +1,126 @@
+import type { ArchGraph, QuizQuestion } from '@/types/content';
+
+const replicated: ArchGraph = {
+  nodes: [
+    { id: 'lb', kind: 'lb', label: 'Load balancer', x: 160, y: 360 },
+    { id: 'web1', kind: 'web', label: 'Server 1', x: 440, y: 220 },
+    { id: 'web2', kind: 'web', label: 'Server 2', x: 440, y: 500 },
+    { id: 'master', kind: 'db', label: 'Master', x: 820, y: 170 },
+    { id: 'rep1', kind: 'db-replica', label: 'Replica 1', x: 820, y: 450 },
+    { id: 'rep2', kind: 'db-replica', label: 'Replica 2', x: 1080, y: 450 },
+  ],
+  edges: [
+    { from: 'lb', to: 'web1' },
+    { from: 'lb', to: 'web2' },
+    { from: 'web1', to: 'master' },
+    { from: 'web2', to: 'master' },
+    { from: 'web1', to: 'rep1' },
+    { from: 'web2', to: 'rep2' },
+    { from: 'master', to: 'rep1', label: 'replication' },
+    { from: 'master', to: 'rep2', label: 'replication' },
+  ],
+};
+
+export const quiz: QuizQuestion[] = [
+  {
+    id: 'L05-q1',
+    kind: 'bins',
+    prompt: 'Route each query: master or replica?',
+    bins: ['Master (primary)', 'Replica'],
+    items: [
+      { text: 'INSERT a new photo', bin: 0 },
+      { text: 'UPDATE a user bio', bin: 0 },
+      { text: 'DELETE a comment', bin: 0 },
+      { text: 'SELECT the home feed', bin: 1 },
+      { text: 'SELECT a profile', bin: 1 },
+      { text: 'SELECT … JOIN photos', bin: 1 },
+    ],
+    explanation: 'All data-modifying commands (insert, update, delete) go to the master. Replicas serve reads.',
+    page: 12,
+  },
+  {
+    id: 'L05-q2',
+    kind: 'mcq',
+    prompt: 'Why do systems usually have more replicas than masters?',
+    options: [
+      'Most applications read much more than they write',
+      'Replicas are cheaper because they have no disk',
+      'Masters cannot store as much data',
+      'The load balancer needs an even number of databases',
+    ],
+    answer: 0,
+    explanation: 'Most applications need a much higher ratio of reads to writes, so you add more read-only replicas.',
+    page: 12,
+  },
+  {
+    id: 'L05-q3',
+    kind: 'multi',
+    prompt: 'Which are advantages of database replication? Pick all that apply.',
+    options: ['Better performance', 'Reliability', 'High availability', 'Joins become unnecessary', 'Writes can go to any database'],
+    answers: [0, 1, 2],
+    explanation: 'Reads run in parallel (performance), data survives a destroyed server (reliability), and the site keeps working if a database is offline (availability). Writes still go only to the master.',
+    page: 12,
+  },
+  {
+    id: 'L05-q4',
+    kind: 'order',
+    prompt: 'The master goes offline. Put the recovery in order.',
+    items: [
+      'The master database goes offline',
+      'A replica is promoted to be the new master',
+      'Database operations temporarily run on the new master',
+      'A new replica replaces the old one for data replication',
+      'Missing data is filled in by running data recovery scripts',
+    ],
+    explanation: 'Promote a replica, run operations on it, replace the replica immediately, and fix any data the old replica was missing with recovery scripts.',
+    page: 13,
+  },
+  {
+    id: 'L05-q5',
+    kind: 'spot',
+    prompt: 'Which database must receive a DELETE statement? Click it.',
+    diagram: replicated,
+    answers: ['master'],
+    explanation: 'Only the master accepts data-modifying operations such as write, update and delete.',
+    page: 12,
+  },
+  {
+    id: 'L05-q6',
+    kind: 'mcq',
+    prompt: 'There is only one replica, and it goes offline. What happens to read operations?',
+    options: [
+      'They are directed to the master temporarily',
+      'They fail until the replica is repaired',
+      'They are queued in the load balancer',
+      'They are sent to the web servers\' memory',
+    ],
+    answer: 0,
+    explanation: 'Reads go to the master temporarily; as soon as the issue is found, a new replica replaces the old one.',
+    page: 13,
+  },
+  {
+    id: 'L05-q7',
+    kind: 'truefalse',
+    prompt: 'When a replica is promoted to master, its data is always perfectly up to date.',
+    answer: false,
+    explanation: 'In production the replica\'s data might not be up to date. The missing data has to be added by running data recovery scripts.',
+    page: 13,
+  },
+  {
+    id: 'L05-q8',
+    kind: 'numeric',
+    prompt: 'PixelPost receives 2,000 queries/sec: 90% reads, 10% writes. Reads are spread evenly over 3 replicas. How many queries/sec does each replica serve?',
+    answer: 600,
+    unit: 'queries/s',
+    explanation: '90% of 2,000 = 1,800 reads; 1,800 / 3 replicas = 600 each. The 200 writes/sec all go to the master.',
+    page: 12,
+  },
+];
+
+export const cards = [
+  { front: 'Master vs replica (slave): who does what?', back: 'Master: writes (insert, update, delete). Replicas: copies of the master\'s data, reads only.' },
+  { front: 'Why more replicas than masters?', back: 'Most apps read far more than they write.' },
+  { front: 'Three advantages of replication?', back: 'Better performance (parallel reads), reliability (data survives disasters), high availability (site stays up if a DB is offline).' },
+  { front: 'A replica dies. Then what?', back: 'Reads go to other healthy replicas (or the master temporarily if it was the only one). A new replica replaces it.' },
+  { front: 'The master dies. Then what?', back: 'A replica is promoted to master. It may be behind, so data recovery scripts fill in missing data. A new replica replaces it.' },
+];

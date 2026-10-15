@@ -1,14 +1,15 @@
 import { clsx } from 'clsx';
-import { motion } from 'framer-motion';
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import { motion, type HTMLMotionProps } from 'framer-motion';
+import type { ReactNode } from 'react';
 
 type Variant = 'primary' | 'violet' | 'emerald' | 'ghost' | 'outline' | 'danger';
 type Size = 'sm' | 'md' | 'lg';
 
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends HTMLMotionProps<'button'> {
   variant?: Variant;
   size?: Size;
   icon?: ReactNode;
+  children?: ReactNode;
 }
 
 const variants: Record<Variant, string> = {

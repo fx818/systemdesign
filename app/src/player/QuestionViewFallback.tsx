@@ -1,6 +1,5 @@
 import { clsx } from 'clsx';
 import { useMemo, useState } from 'react';
-import type { QuizQuestion } from '@/types/content';
 import { Button } from '@/components/ui';
 import type { QuestionViewProps } from './quizBridge';
 

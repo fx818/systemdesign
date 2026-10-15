@@ -1,122 +1,102 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { AnimatePresence, motion } from 'framer-motion';
+import { Home, RotateCcw, UserRound, Video } from 'lucide-react';
+import { Navigate, NavLink, Outlet, Route, Routes, useLocation } from 'react-router-dom';
+import { Toaster } from '@/components/ui';
+import { RenderScene } from '@/player';
+import { DebriefScreen } from '@/screens/DebriefScreen';
+import { HomeScreen } from '@/screens/HomeScreen';
+import { IncidentScreen } from '@/screens/IncidentScreen';
+import { LabScreen } from '@/screens/LabScreen';
+import { LessonScreen } from '@/screens/LessonScreen';
+import { LevelHubScreen } from '@/screens/LevelHubScreen';
+import { MiniGameScreen } from '@/screens/MiniGameScreen';
+import { MissionScreen } from '@/screens/MissionScreen';
+import { ProfileScreen } from '@/screens/ProfileScreen';
+import { QuizScreen } from '@/screens/QuizScreen';
+import { ReviewScreen } from '@/screens/ReviewScreen';
+import { VideosScreen } from '@/screens/VideosScreen';
 
-function App() {
-  const [count, setCount] = useState(0)
+const NAV = [
+  { to: '/', label: 'HQ', icon: Home, end: true },
+  { to: '/profile', label: 'Profile', icon: UserRound, end: false },
+  { to: '/review', label: 'Flashback', icon: RotateCcw, end: false },
+  { to: '/videos', label: 'Videos', icon: Video, end: false },
+];
 
+function Nav() {
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+    <header className="sticky top-0 z-40 border-b border-slate-800 bg-slate-950/85 backdrop-blur">
+      <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-2 px-4">
+        <NavLink to="/" className="mr-2 flex items-center gap-2 font-black tracking-tight text-slate-50">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-400/15 text-cyan-300 shadow-[0_0_16px_rgba(34,211,238,0.35)]">
+            <Home size={15} />
+          </span>
+          <span className="hidden sm:inline">PixelPost HQ</span>
+        </NavLink>
+        <nav className="ml-auto flex items-center gap-1">
+          {NAV.map(({ to, label, icon: Icon, end }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={end}
+              className={({ isActive }) =>
+                `flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors ${
+                  isActive ? 'bg-cyan-400/10 text-cyan-300' : 'text-slate-400 hover:bg-slate-800/70 hover:text-slate-200'
+                }`
+              }
+            >
+              <Icon size={16} />
+              <span className="hidden sm:inline">{label}</span>
+            </NavLink>
+          ))}
+        </nav>
+      </div>
+    </header>
+  );
 }
 
-export default App
+function Layout() {
+  const location = useLocation();
+  return (
+    <div className="flex min-h-screen flex-col">
+      <Nav />
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
+          >
+            <Outlet />
+          </motion.div>
+        </AnimatePresence>
+      </main>
+      <Toaster />
+    </div>
+  );
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route element={<Layout />}>
+        <Route path="/" element={<HomeScreen />} />
+        <Route path="/level/:id" element={<LevelHubScreen />} />
+        <Route path="/level/:id/incident" element={<IncidentScreen />} />
+        <Route path="/level/:id/lesson" element={<LessonScreen />} />
+        <Route path="/level/:id/lab" element={<LabScreen />} />
+        <Route path="/level/:id/minigame/:mg" element={<MiniGameScreen />} />
+        <Route path="/level/:id/mission" element={<MissionScreen />} />
+        <Route path="/level/:id/quiz" element={<QuizScreen />} />
+        <Route path="/level/:id/debrief" element={<DebriefScreen />} />
+        <Route path="/profile" element={<ProfileScreen />} />
+        <Route path="/review" element={<ReviewScreen />} />
+        <Route path="/videos" element={<VideosScreen />} />
+      </Route>
+      <Route path="/render/:levelId" element={<RenderScene />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}

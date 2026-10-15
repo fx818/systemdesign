@@ -28,7 +28,6 @@ export function HomeScreen() {
   const xp = useGame((s) => s.xp);
   const streak = useGame((s) => s.streak);
   const cards = useGame((s) => s.cards);
-  const progress = useGame((s) => s.progress);
 
   const { rank, next, ratio } = rankProgress(xp);
   const targetUsers = useUserCounter();
