@@ -79,6 +79,10 @@ export interface SimResult {
   cost: number;
   livesLeft: number;
   stars: number;
+  /** Shell-compatible progress and reward fields. */
+  goalsMet: boolean;
+  withinBudget: boolean;
+  xp: number;
 }
 
 /* --------------------------------- Helpers -------------------------------- */
