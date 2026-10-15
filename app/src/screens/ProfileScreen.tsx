@@ -1,5 +1,7 @@
+import { PracticeProfile } from '@/screens/practice/PracticeProfile';
 import { Flame, RotateCcw, Trophy, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { getChapter } from '@/content/chapters';
 import { levels } from '@/content/registry';
 import { completedCount, rankProgress, useGame } from '@/game';
 import { BadgeChip, Button, Card, ProgressBar, StarRow } from '@/components/ui';
@@ -94,7 +96,7 @@ export function ProfileScreen() {
                   <span className="mr-2 font-mono text-xs text-cyan-300">{l.id}</span>
                   {l.title}
                 </div>
-                <div className="text-xs text-slate-500">{l.subtitle}</div>
+                <div className="text-xs text-slate-500">{getChapter(l.chapter ?? 1)?.title} · {l.subtitle}</div>
               </div>
               <StarRow value={progress[l.id]?.stars ?? 0} size={16} />
             </div>
@@ -102,6 +104,7 @@ export function ProfileScreen() {
         </Card>
       </section>
 
+      <PracticeProfile />
       <div className="flex justify-end">
         <Button variant="danger" onClick={confirmReset}>
           <RotateCcw size={15} /> Reset progress

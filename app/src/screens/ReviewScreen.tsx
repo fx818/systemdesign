@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { getLevel } from '@/content/registry';
 import { FLASHBACK_SIZE, pickFlashback, todayKey, useGame } from '@/game';
 import type { CardState } from '@/game';
 import { Button, Card, ProgressBar } from '@/components/ui';
@@ -65,7 +66,7 @@ export function ReviewScreen() {
           <div>
             <div className="mb-1 flex items-center justify-between text-xs text-slate-500">
               <span>
-                Card {index + 1} / {due.length}
+                Card {index + 1} / {due.length} · Chapter {getLevel(card.id.split('#')[0])?.chapter ?? 1}
               </span>
               <span className="font-mono">box {card.box} / 5</span>
             </div>

@@ -1,9 +1,9 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { Home, RotateCcw, UserRound, Video } from 'lucide-react';
-import { useEffect } from 'react';
+import { Home, RotateCcw, UserRound, Video, Wrench } from 'lucide-react';
+import { lazy, Suspense, useEffect } from 'react';
 import { Navigate, NavLink, Outlet, Route, Routes, useLocation } from 'react-router-dom';
 import { toast, Toaster } from '@/components/ui';
-import { useGame } from '@/game';
+import { ACHIEVEMENTS, useGame } from '@/game';
 import { RenderScene } from '@/player';
 import { DebriefScreen } from '@/screens/DebriefScreen';
 import { HomeScreen } from '@/screens/HomeScreen';
@@ -18,10 +18,16 @@ import { QuizScreen } from '@/screens/QuizScreen';
 import { ReviewScreen } from '@/screens/ReviewScreen';
 import { VideosScreen } from '@/screens/VideosScreen';
 
+const InterviewScreen = lazy(() => import('@/screens/practice/InterviewScreen').then(m => ({ default: m.InterviewScreen })));
+const SandboxScreen = lazy(() => import('@/screens/practice/SandboxScreen').then(m => ({ default: m.SandboxScreen })));
+const PuzzleScreen = lazy(() => import('@/screens/practice/PuzzleScreen').then(m => ({ default: m.PuzzleScreen })));
+const SurvivalScreen = lazy(() => import('@/screens/practice/SurvivalScreen').then(m => ({ default: m.SurvivalScreen })));
+
 const NAV = [
   { to: '/', label: 'HQ', icon: Home, end: true },
   { to: '/profile', label: 'Profile', icon: UserRound, end: false },
   { to: '/review', label: 'Flashback', icon: RotateCcw, end: false },
+  { to: '/sandbox', label: 'Practice', icon: Wrench, end: false },
   { to: '/videos', label: 'Videos', icon: Video, end: false },
 ];
 
@@ -62,7 +68,9 @@ function Layout() {
   useEffect(() => useGame.subscribe((state, previous) => {
     const gained = state.xp - previous.xp;
     if (gained > 0) toast(`+${gained} XP`, { icon: 'sparkles', tone: 'xp' });
+    for (const achievement of ACHIEVEMENTS) if (state.achievements[achievement.id] !== undefined && previous.achievements[achievement.id] === undefined) toast(`Achievement unlocked: ${achievement.name}`, { icon: 'sparkles', tone: 'xp' });
   }), []);
+  useEffect(() => { useGame.getState().recordPracticeEvent({ type: 'activity', hour: new Date().getHours() }); }, [location.pathname]);
   return (
     <div className="flex min-h-screen flex-col">
       <Nav />
@@ -75,7 +83,7 @@ function Layout() {
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.18, ease: 'easeOut' }}
           >
-            <Outlet />
+            <Suspense fallback={<p className="text-slate-400">Loading practice…</p>}><Outlet /></Suspense>
           </motion.div>
         </AnimatePresence>
       </main>
@@ -99,6 +107,10 @@ export default function App() {
         <Route path="/level/:id/debrief" element={<DebriefScreen />} />
         <Route path="/profile" element={<ProfileScreen />} />
         <Route path="/review" element={<ReviewScreen />} />
+        <Route path="/interview" element={<InterviewScreen />} />
+        <Route path="/sandbox" element={<SandboxScreen />} />
+        <Route path="/puzzle" element={<PuzzleScreen />} />
+        <Route path="/survival" element={<SurvivalScreen />} />
         <Route path="/videos" element={<VideosScreen />} />
       </Route>
       <Route path="/render/:levelId" element={<RenderScene />} />

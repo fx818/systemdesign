@@ -24,6 +24,7 @@ function Quiz({ levelId, questions }: { levelId: string; questions: QuizQuestion
   const [result, setResult] = useState<QuizResult | null>(null);
 
   const finish = (r: QuizResult) => {
+    useGame.getState().recordPracticeEvent({ type: 'quiz', maxCombo: r.maxCombo });
     recordQuizResult(levelId, r.total > 0 ? r.correct / r.total : 0, r.heartsLeft);
     addXp(r.xp);
     completeStep(levelId, 'quiz');

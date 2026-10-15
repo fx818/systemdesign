@@ -1,4 +1,5 @@
 /** Central game state: zustand store persisted to localStorage. */
+import { earnedAchievements, type PracticeEvent } from './achievements';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import type { CardState } from './srs';
@@ -46,6 +47,20 @@ export interface GameState {
   /** local date key -> flashback reviews done that day. */
   flashbackLog: Record<string, number>;
 
+  achievements: Record<string, number>;
+  practice: {
+    survivalBest: number;
+    puzzleStreak: Streak;
+    puzzles: Record<string, number>;
+    interviews: number;
+    bestInterview: number;
+    rewards: Record<string, boolean>;
+  };
+  recordPracticeEvent: (event: PracticeEvent) => void;
+  finishPuzzle: (date: string, moves: number) => void;
+  finishSurvival: (seconds: number) => void;
+  finishInterview: (sessionId: string, score: number, xp: number) => void;
+
   /* ------------------------------- actions ------------------------------- */
   addXp: (amount: number) => void;
   completeStep: (levelId: string, step: StepId) => void;
@@ -70,6 +85,8 @@ const emptyLevelProgress = (): LevelProgress => ({ stars: 0, bestQuiz: 0, comple
 
 const initialState = () => ({
   xp: 0,
+  achievements: {} as Record<string, number>,
+  practice: { survivalBest: 0, puzzleStreak: { count: 0, lastDate: null }, puzzles: {}, interviews: 0, bestInterview: 0, rewards: {} } as GameState['practice'],
   progress: {} as Record<string, LevelProgress>,
   badges: {} as Record<string, number>,
   streak: { count: 0, lastDate: null } as Streak,
@@ -85,8 +102,30 @@ const initialState = () => ({
 
 export const useGame = create<GameState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       ...initialState(),
+
+      recordPracticeEvent: (event) => set(s => {
+        const eligible = [...earnedAchievements(event, s.progress), ...earnedAchievements({ type: 'activity', hour: new Date().getHours() }, s.progress)];
+        const additions = Object.fromEntries(eligible.filter(id => s.achievements[id] === undefined).map(id => [id, Date.now()]));
+        return Object.keys(additions).length ? { achievements: { ...s.achievements, ...additions } } : {};
+      }),
+      finishPuzzle: (date, moves) => {
+        if (date !== todayKey() || !Number.isInteger(moves) || moves < 0 || get().practice.puzzles[date] !== undefined) return;
+        set(s => ({ practice: { ...s.practice, puzzles: { ...s.practice.puzzles, [date]: moves }, puzzleStreak: nextStreak(s.practice.puzzleStreak, date) } }));
+        get().addXp(100);
+        get().recordPracticeEvent({ type: 'puzzle', streak: get().practice.puzzleStreak.count });
+      },
+      finishSurvival: (seconds) => {
+        if (!Number.isFinite(seconds) || seconds < 0) return;
+        set(s => ({ practice: { ...s.practice, survivalBest: Math.max(s.practice.survivalBest, seconds) } }));
+        get().recordPracticeEvent({ type: 'survival', seconds });
+      },
+      finishInterview: (sessionId, score, xp) => {
+        if (get().practice.rewards[sessionId] || !Number.isFinite(score) || !Number.isFinite(xp)) return;
+        set(s => ({ practice: { ...s.practice, interviews: s.practice.interviews + 1, bestInterview: Math.max(s.practice.bestInterview, Math.min(100, Math.max(0, score))), rewards: { ...s.practice.rewards, [sessionId]: true } } }));
+        get().addXp(Math.max(0, xp));
+      },
 
       addXp: (amount) =>
         set((s) => ({
@@ -106,13 +145,15 @@ export const useGame = create<GameState>()(
           };
         }),
 
-      setStars: (levelId, stars) =>
+      setStars: (levelId, stars) => {
         set((s) => {
           const lp = s.progress[levelId] ?? emptyLevelProgress();
           const clamped = Math.max(0, Math.min(3, Math.round(stars)));
           if (clamped <= lp.stars) return {};
           return { progress: { ...s.progress, [levelId]: { ...lp, stars: clamped } } };
-        }),
+        });
+        get().recordPracticeEvent({ type: 'stars' });
+      },
 
       awardBadge: (badgeId) =>
         set((s) => (s.badges[badgeId] !== undefined ? {} : { badges: { ...s.badges, [badgeId]: Date.now() } })),

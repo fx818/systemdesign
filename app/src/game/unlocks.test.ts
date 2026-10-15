@@ -52,3 +52,32 @@ describe('unlocks', () => {
     expect(nextLevel(levels, 'NOPE')).toBeNull();
   });
 });
+
+describe('chapter unlocks', () => {
+  const all: LevelLike[] = [
+    { id: 'L01', number: 1 }, { id: 'L02', number: 2, boss: true },
+    { id: 'C2L01', number: 1, chapter: 2 }, { id: 'C2L02', number: 2, chapter: 2 },
+    { id: 'C2L03', number: 3, chapter: 2, boss: true }, { id: 'C3L01', number: 1, chapter: 3 },
+  ];
+  it('gates the first level on the previous chapter final level', () => {
+    expect(isLevelUnlocked(all[2], all, {})).toBe(false);
+    expect(isLevelUnlocked(all[2], all, { L01: { stars: 3 } })).toBe(false);
+    expect(isLevelUnlocked(all[2], all, { L02: { stars: 1 } })).toBe(true);
+    expect(isLevelUnlocked(all[5], all, { C2L02: { stars: 3 } })).toBe(false);
+    expect(isLevelUnlocked(all[5], all, { C2L03: { stars: 1 } })).toBe(true);
+    expect(isLevelUnlocked({ id: 'C4L01', number: 1, chapter: 4 }, all, {})).toBe(false);
+  });
+  it('uses the last level when the previous chapter has no boss', () => {
+    expect(isLevelUnlocked(all[5], all.filter(l => l.id !== 'C2L03'), { C2L02: { stars: 1 } })).toBe(true);
+  });
+  it('keeps prerequisites and boss rules inside their chapter', () => {
+    expect(isLevelUnlocked(all[3], all, { L01: { stars: 3 } })).toBe(false);
+    expect(isLevelUnlocked(all[3], all, { C2L01: { stars: 1 } })).toBe(true);
+    expect(isLevelUnlocked(all[4], all, { L01: { stars: 3 }, L02: { stars: 3 }, C2L01: { stars: 1 } })).toBe(false);
+    expect(isLevelUnlocked(all[4], all, { C2L01: { stars: 1 }, C2L02: { stars: 1 } })).toBe(true);
+  });
+  it('moves from the end of one chapter to the start of the next', () => {
+    expect(nextLevel(all, 'L02')?.id).toBe('C2L01');
+    expect(nextLevel(all, 'C2L03')?.id).toBe('C3L01');
+  });
+});

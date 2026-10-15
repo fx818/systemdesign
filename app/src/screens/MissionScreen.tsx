@@ -43,6 +43,8 @@ function Mission({ level }: { level: LevelDef }) {
     (r: SimRunResult) => {
       if (finishedRef.current) return;
       finishedRef.current = true;
+      useGame.getState().recordPracticeEvent({ type: 'mission', boss: level.boss === true, passed: r.passed ?? r.goalsMet ?? false,
+        uptime: 'uptime' in r && typeof r.uptime === 'number' ? r.uptime : 0, cost: r.cost ?? Infinity, budget: level.mission.config.budget });
       recordMissionResult(level.id, {
         goalsMet: r.goalsMet ?? false,
         withinBudget: r.withinBudget ?? false,
@@ -53,7 +55,7 @@ function Mission({ level }: { level: LevelDef }) {
       if (typeof r.cost === 'number') setCredits(level.mission.config.budget - r.cost);
       setResult(r);
     },
-    [recordMissionResult, completeStep, addXp, level.id, level.mission.config.budget, setCredits],
+    [recordMissionResult, completeStep, addXp, level.id, level.boss, level.mission.config.budget, setCredits],
   );
 
   const startMission = () => {

@@ -83,3 +83,12 @@ M0 scaffold + content spec -> M1 engine + 2 levels end-to-end -> M2 the other 11
 ## Note
 The book is copyrighted. Fine for personal study; if this gets published,
 lessons should use our own wording and redrawn diagrams, not copied text or figures.
+
+## Wave 3 (in progress)
+- W3-video (Codex): MP4 export pipeline (scripts/render), Videos screen with player + download
+- W3-ch2 (Claude): Chapter 2 Back-of-the-envelope estimation, 4 levels (C2L01-C2L04)
+- W3-ch3 (Claude): Chapter 3 Interview framework, 4 levels (C3L01-C3L04)
+- W3-practice (Codex): chapter support in shell, Interview Mode (+ optional AI interviewer),
+  Sandbox with PNG/Mermaid/JSON export, Daily Puzzle, Survival, hidden achievements
+- W3-platform (OpenCode): PWA icons, code splitting, Capacitor/Android
+Next: Codex review of wave 3; Chapters 4-6 (rate limiter, consistent hashing, KV store); Claude artifact TODO

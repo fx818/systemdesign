@@ -17,3 +17,6 @@ export type { Streak } from './streak';
 
 export { dueCards, pickFlashback, isDue, reviewCardState, newCard, FLASHBACK_SIZE, BOX_INTERVAL_DAYS } from './srs';
 export type { CardState } from './srs';
+
+export { ACHIEVEMENTS, earnedAchievements } from './achievements';
+export type { AchievementId, PracticeEvent } from './achievements';

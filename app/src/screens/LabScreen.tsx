@@ -1,3 +1,4 @@
+import { LabAchievements } from '@/screens/practice/LabAchievements';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/game';
@@ -36,7 +37,7 @@ function Lab({ level }: { level: LevelDef }) {
         <p className="mt-1 max-w-2xl text-sm text-slate-400">{level.lab.intro}</p>
       </header>
 
-      <SimRunnerBridge config={level.lab.config} mode="lab" tasks={level.lab.tasks} onFinish={finish} />
+      <LabAchievements><SimRunnerBridge config={level.lab.config} mode="lab" tasks={level.lab.tasks} onFinish={finish} /></LabAchievements>
 
       <div className="mt-4 flex justify-end">
         <Button

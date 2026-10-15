@@ -1,8 +1,10 @@
 import { motion } from 'framer-motion';
 import { Flame, Lock, RotateCcw, Skull } from 'lucide-react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { levels } from '@/content/registry';
+import { chapters, getChapter } from '@/content/chapters';
+import { PracticeCards } from '@/screens/practice/PracticeCards';
+import { levels, levelsInChapter, chapterOf } from '@/content/registry';
 import { useGame, FLASHBACK_SIZE, isLevelUnlocked, pickFlashback, rankProgress, streakAlive, todayKey } from '@/game';
 import type { LevelLike } from '@/game';
 import { ProgressBar, StarRow } from '@/components/ui';
@@ -17,6 +19,7 @@ function useUserCounter(): number {
   return useMemo(() => {
     let users = 1;
     for (const l of levels) {
+      if (chapterOf(l) !== 1) continue;
       if ((progress[l.id]?.stars ?? 0) >= 1) users = Math.max(users, l.users);
     }
     return users;
@@ -25,6 +28,9 @@ function useUserCounter(): number {
 
 export function HomeScreen() {
   const navigate = useNavigate();
+  const [selectedChapter, setSelectedChapter] = useState(1);
+  const chapter = getChapter(selectedChapter);
+  const progress = useGame((s) => s.progress);
   const xp = useGame((s) => s.xp);
   const streak = useGame((s) => s.streak);
   const cards = useGame((s) => s.cards);
@@ -37,15 +43,15 @@ export function HomeScreen() {
   const flashback = pickFlashback(cards, today, Math.max(0, FLASHBACK_SIZE - (flashbackLog[today] ?? 0)));
   const alive = streakAlive(streak, today);
 
-  // The level path always shows 13 slots; registry levels fill them in.
+  // Chapter 1 retains its 13 slots; later chapters use their discovered levels.
   const slots: LevelLike[] = useMemo(
-    () =>
+    () => selectedChapter !== 1 ? levelsInChapter(selectedChapter) :
       Array.from({ length: TOTAL_LEVELS }, (_, i) => {
         const n = i + 1;
-        const real = levels.find((l) => l.number === n);
+        const real = levels.length ? levelsInChapter(1).find((l) => l.number === n) : undefined;
         return real ?? { id: levelIdFor(n), number: n, boss: n === TOTAL_LEVELS ? true : undefined };
       }),
-    [],
+    [selectedChapter],
   );
 
   return (
@@ -111,19 +117,35 @@ export function HomeScreen() {
         </div>
       </section>
 
+      <section aria-label="Chapters" className="grid gap-3 sm:grid-cols-3">
+        {chapters.map((item) => {
+          const chapterLevels = levels.length ? levelsInChapter(item.number) : [];
+          const done = chapterLevels.filter((level) => (progress[level.id]?.stars ?? 0) > 0).length;
+          return <button key={item.number} type="button" aria-pressed={selectedChapter === item.number}
+            onClick={() => setSelectedChapter(item.number)}
+            className="rounded-2xl border bg-slate-900/70 p-4 text-left"
+            style={{ borderColor: selectedChapter === item.number ? item.color : '#334155' }}>
+            <span className="text-xs font-bold" style={{ color: item.color }}>Chapter {item.number}</span>
+            <span className="mt-1 block font-bold text-slate-100">{item.title}</span>
+            <span className="mt-1 block text-xs text-slate-400">{item.subtitle}</span>
+            <span className="mt-3 block text-xs text-slate-300">{!item.available ? 'Coming soon' : chapterLevels.length ? `${done} / ${chapterLevels.length} complete` : 'Levels arriving soon'}</span>
+          </button>;
+        })}
+      </section>
+      <PracticeCards />
       {/* ------------------------- architecture map ------------------------- */}
-      <section>
+      {selectedChapter === 1 && <section>
         <div className="mb-3 flex items-baseline justify-between">
           <h2 className="text-xl font-bold text-slate-100">Architecture map</h2>
           <span className="text-xs text-slate-500">reveals as you ship fixes</span>
         </div>
         <ArchitectureMap />
-      </section>
+      </section>}
 
       {/* ----------------------------- level path ---------------------------- */}
       <section>
-        <h2 className="mb-3 text-xl font-bold text-slate-100">The road to 10M</h2>
-        <LevelPath slots={slots} onPick={(id) => navigate(`/level/${id}`)} />
+        <h2 className="mb-3 text-xl font-bold text-slate-100">{selectedChapter === 1 ? 'The road to 10M' : chapter?.title}</h2>
+        {!chapter?.available ? <p className="text-slate-400">This chapter is coming soon.</p> : slots.length === 0 ? <p className="text-slate-400">Levels are arriving soon.</p> : <LevelPath slots={slots} onPick={(id) => navigate(`/level/${id}`)} />}
       </section>
     </div>
   );
@@ -142,7 +164,7 @@ function LevelPath({ slots, onPick }: { slots: LevelLike[]; onPick: (id: string)
           const y1 = i * rowH + 46;
           const x2 = pathX(i + 1);
           const y2 = (i + 1) * rowH + 46;
-          const lit = isLevelUnlocked(slots[i + 1], slots, progress);
+          const lit = isLevelUnlocked(slots[i + 1], levels, progress);
           return (
             <line
               key={slot.id}
@@ -159,8 +181,8 @@ function LevelPath({ slots, onPick }: { slots: LevelLike[]; onPick: (id: string)
       </svg>
 
       {slots.map((slot, i) => {
-        const real = levels.find((l) => l.number === slot.number);
-        const unlocked = isLevelUnlocked(slot, slots, progress) && !!real;
+        const real = levels.find((l) => l.id === slot.id);
+        const unlocked = isLevelUnlocked(slot, levels, progress) && !!real;
         const stars = progress[slot.id]?.stars ?? 0;
         const x = pathX(i);
         const y = i * rowH + 46;

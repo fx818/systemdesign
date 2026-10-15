@@ -1,13 +1,14 @@
 /** Level unlock rules. Pure helpers — unit tested.
  *
- * - L01 is always open.
- * - Any other level opens once the previous level has >= 1 star.
- * - The boss level (L13) opens once every non-boss level is done (>= 1 star).
+ * - Chapter 1 starts open; later chapters need the previous chapter’s final level.
+ * - Other levels require the previous level within the same chapter.
+ * - A boss requires all earlier non-boss positions in its own chapter.
  */
 
 export interface LevelLike {
   id: string;
   number: number;
+  chapter?: number;
   boss?: boolean;
 }
 
@@ -26,16 +27,23 @@ export function isDone(progress: ProgressMap, level: LevelLike): boolean {
 }
 
 export function isLevelUnlocked(level: LevelLike, all: readonly LevelLike[], progress: ProgressMap): boolean {
+  const chapter = level.chapter ?? 1;
+  const peers = all.filter((candidate) => (candidate.chapter ?? 1) === chapter);
+  if (level.number <= 1) {
+    if (chapter === 1) return true;
+    const previous = all.filter((candidate) => (candidate.chapter ?? 1) === chapter - 1);
+    const last = previous.find((candidate) => candidate.boss)
+      ?? [...previous].sort((a, b) => b.number - a.number)[0];
+    return last !== undefined && isDone(progress, last);
+  }
   if (level.boss) {
     return Array.from({ length: level.number - 1 }, (_, i) => i + 1).every((number) => {
-      const required = all.find((candidate) => candidate.number === number && !candidate.boss);
+      const required = peers.find((candidate) => candidate.number === number && !candidate.boss);
       return required !== undefined && isDone(progress, required);
     });
   }
-  if (level.number <= 1) return true;
-  const prev = all.find((l) => !l.boss && l.number === level.number - 1);
-  if (!prev) return false;
-  return isDone(progress, prev);
+  const prev = peers.find((candidate) => !candidate.boss && candidate.number === level.number - 1);
+  return prev !== undefined && isDone(progress, prev);
 }
 
 /** Ids of all unlocked levels, registry order preserved. */
@@ -45,7 +53,7 @@ export function unlockedIds(all: readonly LevelLike[], progress: ProgressMap): s
 
 /** The next level to play after `levelId` (by number, skipping nothing). */
 export function nextLevel<T extends LevelLike>(all: readonly T[], levelId: string): T | null {
-  const sorted = [...all].sort((a, b) => a.number - b.number);
+  const sorted = [...all].sort((a, b) => (a.chapter ?? 1) - (b.chapter ?? 1) || a.number - b.number);
   const idx = sorted.findIndex((l) => l.id === levelId);
   if (idx < 0 || idx >= sorted.length - 1) return null;
   return sorted[idx + 1];
