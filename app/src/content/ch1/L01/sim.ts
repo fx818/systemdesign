@@ -21,8 +21,8 @@ export const labConfig: SimConfig = {
   palette: [],
   budget: 200,
   events: [{ at: 0, type: 'traffic', rps: 20, label: 'Launch day: Maya\'s mom' }],
-  goals: { durationSec: 120 },
-  knobs: [{ id: 'rps', label: 'Traffic (requests/sec)', type: 'slider', min: 0, max: 3000, step: 50, initial: 20 }],
+  goals: { minUptime: 0.95, maxP95Ms: 400, durationSec: 120 },
+  knobs: [{ id: 'rps', label: 'Traffic (requests/sec)', type: 'slider', min: 0, max: 3000, step: 1, initial: 20 }],
   locked: ['client', 'mobile', 'dns', 'web-1'],
 };
 
@@ -47,7 +47,7 @@ export const missionConfig: SimConfig = {
     ],
   },
   palette: ['web'],
-  budget: 150,
+  budget: 130,
   locked: ['client', 'mobile', 'dns'],
   events: [
     { at: 0, type: 'traffic', rps: 1, label: 'Mom signs up' },
@@ -57,11 +57,11 @@ export const missionConfig: SimConfig = {
     { at: 40, type: 'traffic', rps: 200, label: 'Book club tells their kids' },
     { at: 44, type: 'message', who: 'ravi', text: 'One server can easily take this. Watch the request dots flow.' },
   ],
-  goals: { minUptime: 0.95, maxP95Ms: 300, maxCost: 150, durationSec: 60 },
+  goals: { minUptime: 0.95, maxP95Ms: 300, maxCost: 130, durationSec: 60 },
 };
 
 export const missionHints = [
   'Drag a Web server from the palette onto the board. A single box is all you need at this stage.',
   'Connect both the Web browser and the Mobile app to your server. DNS only gives them its address; the HTTP requests then go straight to the server.',
-  'One web server costs well under the 150-credit budget. Don\'t add extras: this level is about the simplest possible setup.',
+  'One web server costs well under the 130-credit budget. Don\'t add extras: this level is about the simplest possible setup.',
 ];

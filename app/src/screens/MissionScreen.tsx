@@ -26,7 +26,7 @@ function Mission({ level }: { level: LevelDef }) {
   const resetLives = useGame((s) => s.resetLives);
   const loseLife = useGame((s) => s.loseLife);
   const setCredits = useGame((s) => s.setCredits);
-  const useHint = useGame((s) => s.useHint);
+  const recordHint = useGame((s) => s.useHint);
   const lives = useGame((s) => s.lives);
   const hintsUsed = useGame((s) => s.hintsUsed[level.id] ?? 0);
 
@@ -46,6 +46,7 @@ function Mission({ level }: { level: LevelDef }) {
       recordMissionResult(level.id, {
         goalsMet: r.goalsMet ?? false,
         withinBudget: r.withinBudget ?? false,
+        stars: r.stars,
       });
       if (r.goalsMet) completeStep(level.id, 'mission');
       addXp(r.xp ?? (r.goalsMet ? 100 : 0));
@@ -61,7 +62,7 @@ function Mission({ level }: { level: LevelDef }) {
   };
 
   const takeHint = () => {
-    useHint(level.id);
+    recordHint(level.id);
     addXp(-HINT_COST_XP);
   };
 

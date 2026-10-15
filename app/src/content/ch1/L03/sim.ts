@@ -18,9 +18,9 @@ export const labConfig: SimConfig = {
     ],
   },
   palette: ['web'],
-  budget: 500,
+  budget: 800,
   events: [{ at: 0, type: 'traffic', rps: 600, label: '10,000 users online' }],
-  goals: { durationSec: 180 },
+  goals: { minUptime: 0.95, maxP95Ms: 400, durationSec: 180 },
   knobs: [
     { id: 'rps', label: 'Traffic (requests/sec)', type: 'slider', min: 0, max: 4000, step: 100, initial: 600 },
     { id: 'servers', label: 'Web servers in the pool', type: 'slider', min: 1, max: 3, step: 1, initial: 1 },
@@ -54,7 +54,7 @@ export const missionConfig: SimConfig = {
     ],
   },
   palette: ['web'],
-  budget: 300,
+  budget: 750,
   locked: ['client', 'mobile', 'dns', 'web-1', 'db-1'],
   events: [
     { at: 0, type: 'traffic', rps: 500, label: 'Evening traffic' },
@@ -62,16 +62,16 @@ export const missionConfig: SimConfig = {
     { at: 15, type: 'message', who: 'ravi', text: 'One box tops out around 1,000 requests/sec. Do the math before the spike lands.' },
     { at: 25, type: 'traffic', rps: 1800, label: 'Prime-time TV spike' },
     { at: 30, type: 'message', who: 'pager', text: 'BZZT! Traffic x3.6! BZZZT!' },
-    { at: 45, type: 'traffic', rps: 2400, label: 'Viewers tell their friends' },
+    { at: 45, type: 'traffic', rps: 2200, label: 'Viewers tell their friends' },
     { at: 50, type: 'message', who: 'maya', text: 'The host just said "download it now". On live TV.' },
     { at: 70, type: 'traffic', rps: 900, label: 'Segment over' },
     { at: 75, type: 'message', who: 'ravi', text: 'Notice: you never needed one giant server. You needed more of them.' },
   ],
-  goals: { minUptime: 0.95, maxP95Ms: 400, maxCost: 300, durationSec: 90 },
+  goals: { minUptime: 0.95, maxP95Ms: 400, maxCost: 750, durationSec: 90 },
 };
 
 export const missionHints = [
   'There is no "bigger server" in the palette on purpose: you are already near the top tier. The only way up is more web servers.',
-  'At 2,400 requests/sec and about 1,000 per server, you need at least 3 web servers in total. Connect the clients to each new server, and each server to the database.',
-  'Two extra web servers (about 200 credits) fit the 300-credit budget. Place them before the spike at 25 s.',
+  'At 2,200 requests/sec and about 1,000 per server, you need at least 3 web servers in total. Connect the clients to each new server, and each server to the database.',
+  'Two extra web servers (about 200 credits) fit the 750-credit budget. Place them before the spike at 25 s.',
 ];

@@ -7,6 +7,8 @@ const base = {
     { id: 'lb', kind: 'lb' as const, label: 'Load balancer', x: 300, y: 360 },
     { id: 'web-1', kind: 'web' as const, label: 'Server 1', x: 520, y: 240 },
     { id: 'web-2', kind: 'web' as const, label: 'Server 2', x: 520, y: 480 },
+    { id: 'web-3', kind: 'web' as const, label: 'Server 3', x: 520, y: 120 },
+    { id: 'web-4', kind: 'web' as const, label: 'Server 4', x: 520, y: 600 },
     { id: 'db-1', kind: 'db' as const, label: 'Master', x: 1000, y: 200 },
     { id: 'replica-1', kind: 'db-replica' as const, label: 'Replica', x: 1000, y: 500 },
   ],
@@ -15,6 +17,12 @@ const base = {
     { from: 'client', to: 'lb' },
     { from: 'lb', to: 'web-1' },
     { from: 'lb', to: 'web-2' },
+    { from: 'lb', to: 'web-3' },
+    { from: 'lb', to: 'web-4' },
+    { from: 'web-3', to: 'db-1' },
+    { from: 'web-4', to: 'db-1' },
+    { from: 'web-3', to: 'replica-1' },
+    { from: 'web-4', to: 'replica-1' },
     { from: 'web-1', to: 'db-1', label: 'writes' },
     { from: 'web-2', to: 'db-1', label: 'writes' },
     { from: 'web-1', to: 'replica-1', label: 'reads' },
@@ -26,19 +34,19 @@ const base = {
 export const labConfig: SimConfig = {
   start: {
     nodes: [...base.nodes, { id: 'cache-1', kind: 'cache', label: 'Cache', x: 760, y: 360 }],
-    edges: [...base.edges, { from: 'web-1', to: 'cache-1', label: 'get/set' }, { from: 'web-2', to: 'cache-1', label: 'get/set' }],
+    edges: [...base.edges, { from: 'web-1', to: 'cache-1', label: 'get/set' }, { from: 'web-2', to: 'cache-1', label: 'get/set' }, { from: 'web-3', to: 'cache-1' }, { from: 'web-4', to: 'cache-1' }],
   },
   palette: ['cache'],
-  budget: 800,
+  budget: 1600,
   events: [{ at: 0, type: 'traffic', rps: 2500, label: 'Feed rush hour' }],
-  goals: { durationSec: 180 },
+  goals: { minUptime: 0.95, maxP95Ms: 400, durationSec: 180 },
   knobs: [
     { id: 'ttl', label: 'TTL (seconds)', type: 'slider', min: 1, max: 86400, step: 1, initial: 300 },
-    { id: 'cacheSize', label: 'Cache memory (GB)', type: 'slider', min: 1, max: 64, step: 1, initial: 8 },
+    { id: 'cacheSize', label: 'Cache memory (GB)', type: 'slider', min: 1, max: 64, step: 1, initial: 50 },
     { id: 'eviction', label: 'Eviction policy', type: 'select', options: ['LRU', 'LFU', 'FIFO'], initial: 'LRU' },
     { id: 'rps', label: 'Traffic (requests/sec)', type: 'slider', min: 0, max: 6000, step: 100, initial: 2500 },
   ],
-  locked: ['client', 'dns', 'lb', 'web-1', 'web-2', 'db-1', 'replica-1'],
+  locked: ['client', 'dns', 'lb', 'web-1', 'web-2', 'web-3', 'web-4', 'db-1', 'replica-1'],
 };
 
 export const labTasks = [
@@ -52,8 +60,8 @@ export const labTasks = [
 export const missionConfig: SimConfig = {
   start: base,
   palette: ['cache', 'db-replica'],
-  budget: 450,
-  locked: ['client', 'dns', 'lb', 'web-1', 'web-2', 'db-1', 'replica-1'],
+  budget: 1600,
+  locked: ['client', 'dns', 'lb', 'web-1', 'web-2', 'web-3', 'web-4', 'db-1', 'replica-1'],
   knobs: [{ id: 'ttl', label: 'TTL (seconds)', type: 'slider', min: 1, max: 86400, step: 1, initial: 300 }],
   events: [
     { at: 0, type: 'traffic', rps: 2000, label: 'Evening scroll' },
@@ -64,11 +72,11 @@ export const missionConfig: SimConfig = {
     { at: 47, type: 'message', who: 'pager', text: 'BZZT! Cache node down! Did you have a spare, or is the database about to melt?' },
     { at: 70, type: 'traffic', rps: 2200, label: 'Things calm down' },
   ],
-  goals: { minUptime: 0.98, maxP95Ms: 200, minCacheHit: 0.7, maxCost: 450, durationSec: 90 },
+  goals: { minUptime: 0.98, maxP95Ms: 200, minCacheHit: 0.7, maxCost: 1600, durationSec: 90 },
 };
 
 export const missionHints = [
-  'Place a cache and connect both web servers to it. Reads check the cache first, so the database only sees misses.',
+  'Place a cache and connect all four web servers to it. Reads check the cache first, so the database only sees misses.',
   'A single cache server is a single point of failure, and one crashes at 45 s. Place two caches so one can carry on.',
   'Keep the TTL moderate (a few minutes). Too short and the hit rate drops below 70%; replicas cannot fix latency the way a cache can.',
 ];

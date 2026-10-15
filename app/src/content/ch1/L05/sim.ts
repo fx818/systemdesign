@@ -28,9 +28,9 @@ export const labConfig: SimConfig = {
     ],
   },
   palette: ['db-replica'],
-  budget: 800,
+  budget: 1400,
   events: [{ at: 0, type: 'traffic', rps: 1500, label: 'Evening scrolling' }],
-  goals: { durationSec: 180 },
+  goals: { minUptime: 0.95, maxP95Ms: 400, durationSec: 180 },
   knobs: [
     { id: 'replicas', label: 'Read replicas', type: 'slider', min: 0, max: 4, step: 1, initial: 2 },
     { id: 'rps', label: 'Traffic (requests/sec)', type: 'slider', min: 0, max: 5000, step: 100, initial: 1500 },
@@ -66,7 +66,7 @@ export const missionConfig: SimConfig = {
     ],
   },
   palette: ['db-replica'],
-  budget: 400,
+  budget: 1700,
   locked: ['client', 'dns', 'lb', 'web-1', 'web-2', 'db-1'],
   events: [
     { at: 0, type: 'traffic', rps: 1200, label: 'Normal evening' },
@@ -79,11 +79,11 @@ export const missionConfig: SimConfig = {
     { at: 62, type: 'message', who: 'ravi', text: 'Reads should shift to the healthy replicas. Nothing to see here, hopefully.' },
     { at: 75, type: 'traffic', rps: 1000, label: 'Contest closes' },
   ],
-  goals: { minUptime: 0.97, maxP95Ms: 300, maxCost: 400, durationSec: 90 },
+  goals: { minUptime: 0.97, maxP95Ms: 300, maxCost: 1700, durationSec: 90 },
 };
 
 export const missionHints = [
   'Place replicas and connect each web server to them for reads, plus the master to each replica for replication.',
   'When the master dies at 30 s, one replica gets promoted. When another dies at 60 s, you still need a replica left to serve reads: plan for 3.',
-  'Three replicas fit inside the 400-credit budget. Place them all before 30 s so they are synced before the crash.',
+  'Three replicas fit inside the 1,700-credit budget. Place them all before 30 s so they are synced before the crash.',
 ];

@@ -27,6 +27,26 @@ describe('ArchCanvas', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
     expect(screen.getByTestId('graph')).not.toHaveTextContent('"kind":"cache"');
   });
+  it('lets a placed data center be named for the authored regional waves', () => {
+    function RegionEditor() {
+      const [value, setValue] = useState<ArchGraph>({ nodes: [{ id: 'datacenter-1', kind: 'datacenter', label: 'Data center 1', x: 500, y: 300 }], edges: [] });
+      return <ArchCanvas graph={value} editable onChange={setValue} />;
+    }
+    render(<RegionEditor />);
+    fireEvent.click(screen.getByRole('button', { name: 'Data center 1' }));
+    fireEvent.change(screen.getByRole('textbox', { name: 'Region name' }), { target: { value: 'US-West' } });
+    expect(screen.getByRole('button', { name: 'US-West' })).toBeInTheDocument();
+  });
+  it('lets the NoSQL alternative be identified as a shared session store', () => {
+    function SessionEditor() {
+      const [value, setValue] = useState<ArchGraph>({ nodes: [{ id: 'nosql-1', kind: 'nosql', label: 'NoSQL store 1', x: 500, y: 300 }], edges: [] });
+      return <ArchCanvas graph={value} editable onChange={setValue} />;
+    }
+    render(<SessionEditor />);
+    fireEvent.click(screen.getByRole('button', { name: 'NoSQL store 1' }));
+    fireEvent.change(screen.getByRole('textbox', { name: 'Component name' }), { target: { value: 'Session store' } });
+    expect(screen.getByRole('button', { name: 'Session store' })).toBeInTheDocument();
+  });
   it('prevents over-budget placement', () => {
     render(<ArchCanvas graph={graph} editable onChange={vi.fn()} palette={['cache']} budget={150} />);
     expect(screen.getByRole('button', { name: 'Add Cache' })).toBeDisabled();

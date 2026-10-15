@@ -76,6 +76,16 @@ describe('shell routes and rewards', () => {
     expect(useGame.getState().xp).toBe(0);
   });
 
+  it.each([1, 2])('preserves the simulator %i-star limit through a flawless interview', (missionStars) => {
+    const state = useGame.getState();
+    state.recordMissionResult('L01', { goalsMet: true, withinBudget: true, stars: missionStars });
+    state.recordQuizResult('L01', 1, 3);
+    state.completeStep('L01', 'quiz');
+    open('/level/L01/debrief');
+    expect(useGame.getState().progress.L01.stars).toBe(missionStars);
+    expect(useGame.getState().xp).toBe(missionStars * 40 + 20);
+  });
+
   it('caps a passing interview at two stars after hearts run out', () => {
     const state = useGame.getState();
     state.recordMissionResult('L01', { goalsMet: true, withinBudget: true });

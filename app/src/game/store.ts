@@ -19,6 +19,8 @@ export interface LevelProgress {
 export interface MissionResultSummary {
   goalsMet: boolean;
   withinBudget: boolean;
+  /** Simulator score, including efficiency and lives. Optional for older saves. */
+  stars?: number;
 }
 
 export const STARTING_LIVES = 3;

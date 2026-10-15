@@ -73,13 +73,13 @@ function Debrief({ level }: { level: LevelDef }) {
 
   const stars = useMemo(
     () =>
-      computeStars({
+      Math.min(missionResult?.stars ?? 3, computeStars({
         goalsMet: missionResult?.goalsMet === true && (progress?.completedSteps.includes('quiz') ?? false),
         withinBudget: missionResult?.withinBudget ?? false,
         quizScore: quizResult?.score ?? progress?.bestQuiz ?? 0,
         hintsUsed,
         heartsLeft: quizResult?.heartsLeft,
-      }),
+      })),
     [missionResult, progress, hintsUsed, quizResult],
   );
 

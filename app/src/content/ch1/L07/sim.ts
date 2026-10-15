@@ -46,7 +46,7 @@ export const labConfig: SimConfig = {
     { at: 0, type: 'traffic', rps: 1800, label: 'Morning in Europe and Asia' },
     { at: 5, type: 'message', who: 'ravi', text: 'Flip the CDN toggle off and on. Watch where the static share of traffic goes.' },
   ],
-  goals: { durationSec: 240 },
+  goals: { minUptime: 0.95, maxP95Ms: 400, durationSec: 240 },
   knobs: [
     { id: 'cdn', label: 'CDN on', type: 'toggle', initial: false },
     { id: 'ttl', label: 'CDN cache TTL (seconds)', type: 'slider', min: 5, max: 3600, step: 5, initial: 300 },
@@ -67,7 +67,7 @@ export const labTasks = [
 export const missionConfig: SimConfig = {
   start: base,
   palette: ['cdn', 'web', 'cache'],
-  budget: 1100,
+  budget: 1600,
   locked: ['client', 'mobile', 'dns', 'lb', 'db', 'db-r1'],
   events: [
     { at: 0, type: 'traffic', rps: 1500, label: 'Europe wakes up' },
@@ -81,7 +81,7 @@ export const missionConfig: SimConfig = {
     { at: 72, type: 'message', who: 'maya', text: 'CDN is back. Did anyone in Berlin notice? Please say no.' },
     { at: 80, type: 'traffic', rps: 3200, label: 'Tokyo evening rush' },
   ],
-  goals: { minUptime: 0.98, maxP95Ms: 250, maxCost: 1100, durationSec: 100 },
+  goals: { minUptime: 0.98, maxP95Ms: 250, maxCost: 1600, durationSec: 100 },
 };
 
 export const missionHints = [

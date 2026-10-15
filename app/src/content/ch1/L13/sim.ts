@@ -22,7 +22,7 @@ export const labConfig: SimConfig = {
     { at: 0, type: 'traffic', rps: 3000, label: 'Pre-game warm-up' },
     { at: 0, type: 'jobs', perSec: 40, label: 'Photo filters' },
   ],
-  goals: { durationSec: 600 },
+  goals: { minUptime: 0.95, maxP95Ms: 400, durationSec: 600 },
   knobs: [
     { id: 'rps', label: 'Traffic (requests/sec)', type: 'slider', min: 0, max: 20000, step: 500, initial: 3000 },
     { id: 'servers', label: 'Web servers', type: 'slider', min: 1, max: 10, step: 1, initial: 2 },
@@ -51,7 +51,7 @@ export const labTasks = [
 export const missionConfig: SimConfig = {
   start: users,
   palette: EVERYTHING.filter((k) => k !== 'client' && k !== 'mobile'),
-  budget: 3200,
+  budget: 4900,
   locked: ['client', 'mobile'],
   events: [
     { at: 0, type: 'traffic', rps: 2000, label: 'Pre-game' },
@@ -77,11 +77,11 @@ export const missionConfig: SimConfig = {
     { at: 165, type: 'traffic', rps: 6000, label: 'Final whistle' },
     { at: 175, type: 'message', who: 'maya', text: 'Ten. Million. Users. Do not touch anything.' },
   ],
-  goals: { minUptime: 0.98, maxP95Ms: 400, maxCost: 3200, maxQueue: 2000, durationSec: 180 },
+  goals: { minUptime: 0.98, maxP95Ms: 400, maxCost: 4900, maxQueue: 2000, durationSec: 180 },
 };
 
 export const missionHints = [
-  'Front door first: DNS, a CDN for static files, a load balancer, and at least two web servers backed by a shared session store (stateless!). Wave 2 kills one web server.',
-  'Data tier: a master with at least one replica (wave 4 kills the master), two cache servers (wave 3 kills one), and shards with room for a hot celebrity shard (wave 6).',
-  'Waves 5 and 7: add a second data center so US-West traffic can fail over, and a message queue with a few workers to absorb the photo-filter burst. Add metrics so you see it all coming.',
+  'Front door first: DNS, a CDN for static files, a load balancer, and seven web servers (three in US-West, four in US-East) backed by a shared session store (stateless!). Wave 2 kills one web server.',
+  'Data tier: a master with at least one replica (wave 4 kills the master), two cache servers reachable from every web server (wave 3 kills one), and four pre-placed shards in US-East. Keep the caches connected to the primary/replica tier for its promotion at 82 s; connect the caches to the shards around 110 s, before the celebrity wave.',
+  'Waves 5 and 7: select each data center and set its Region name to US-West or US-East. Connect the front door to both regions and each region to its own servers. Keep data, caches, sessions and the queue in US-East, with a replication link from the West primary to an East replica; connect US-East directly to those shared services to establish ownership. Add a message queue with four workers to absorb the photo-filter burst. Add metrics so you see it all coming.',
 ];

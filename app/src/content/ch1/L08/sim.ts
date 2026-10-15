@@ -19,6 +19,7 @@ const stateful: ArchGraph = {
     { from: 'client', to: 'dns' },
     { from: 'mobile', to: 'dns' },
     { from: 'client', to: 'cdn', label: 'static' },
+    { from: 'mobile', to: 'cdn', label: 'static' },
     { from: 'client', to: 'lb', label: 'HTTP' },
     { from: 'mobile', to: 'lb', label: 'HTTP' },
     { from: 'lb', to: 'web-1' },
@@ -42,7 +43,7 @@ export const labConfig: SimConfig = {
     { at: 0, type: 'traffic', rps: 2000, label: 'Normal evening' },
     { at: 5, type: 'message', who: 'ravi', text: 'Sticky sessions are on. Kill a web server and count the logouts.' },
   ],
-  goals: { durationSec: 240 },
+  goals: { minUptime: 0.95, maxP95Ms: 400, durationSec: 240 },
   knobs: [
     { id: 'sticky', label: 'Sticky sessions (state on servers)', type: 'toggle', initial: true },
     { id: 'servers', label: 'Web servers', type: 'slider', min: 1, max: 8, step: 1, initial: 3 },
@@ -54,7 +55,7 @@ export const labConfig: SimConfig = {
 export const labTasks = [
   'Sticky sessions are on and each server holds its own users\' sessions. Kill web-2 and watch the logout spike: its users lost their state.',
   'Revive web-2. Change the "Web servers" slider: with sticky sessions, users get reshuffled and more of them are logged out.',
-  'Drop a Session store (or a NoSQL node) on the board and connect every web server to it.',
+  'Drop a Session store on the board and connect every web server to it. For the NoSQL alternative, select it and set Component name to Session store.',
   'Turn sticky sessions off. Kill a web server again: no logouts this time, because any server can fetch any session.',
   'Push traffic up and down and move the server slider with it. That is what autoscaling does for you automatically.',
 ];
@@ -62,7 +63,7 @@ export const labTasks = [
 export const missionConfig: SimConfig = {
   start: stateful,
   palette: ['session-store', 'nosql', 'web'],
-  budget: 1400,
+  budget: 1900,
   locked: ['client', 'mobile', 'dns', 'cdn', 'lb', 'db', 'db-r1', 'cache'],
   knobs: [
     { id: 'sticky', label: 'Sticky sessions', type: 'toggle', initial: true },
@@ -80,11 +81,11 @@ export const missionConfig: SimConfig = {
     { at: 72, type: 'message', who: 'maya', text: 'Stream\'s over. Can we stop paying for all those servers now?' },
     { at: 85, type: 'traffic', rps: 1500, label: 'Bedtime' },
   ],
-  goals: { minUptime: 0.99, maxP95Ms: 300, maxCost: 1400, durationSec: 100 },
+  goals: { minUptime: 0.99, maxP95Ms: 300, maxCost: 1900, durationSec: 100 },
 };
 
 export const missionHints = [
-  'Place a Session store (or NoSQL) node and connect every web server to it. Then switch sticky sessions off: state no longer lives on the servers.',
-  'When the wave hits at 20 s and 40 s, raise the web server count. When traffic drops at 70 s, lower it again, just like an autoscaler would.',
-  'You only need one session store. Leaving extra servers running after the wave costs credits and stars.',
+  'Place a Session store node and connect every web server to it. A NoSQL alternative also works if you select it and set Component name to Session store. Then switch sticky sessions off: state no longer lives on the servers.',
+  'When the wave hits at 20 s and 40 s, raise the web server count to 5 before 40 s; one of the three visible pool members fails at 50 s. When traffic drops at 70 s, lower it again, just like an autoscaler would.',
+  'You only need one Session store (80 credits). NoSQL is an alternative, but costs 250 credits. Leaving extra servers running after the wave costs credits and stars.',
 ];

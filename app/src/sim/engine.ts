@@ -231,7 +231,7 @@ export function createSim(config: SimConfig, graph: ArchGraph, knobs?: KnobValue
         const region = topo.regionOf.get(id) ?? '';
         groups.set(region, [...(groups.get(region) ?? []), id]);
       }
-      const names = [...groups.keys()].sort((a, b) => Number(/east/i.test(b)) - Number(/east/i.test(a)) || a.localeCompare(b));
+      const names = [...groups.keys()].sort((a, b) => Number(/east/i.test(label(b))) - Number(/east/i.test(label(a))) || a.localeCompare(b));
       const hasDeadRegion = original.some(id => regionsDown.has(topo.regionOf.get(id) ?? ''));
       failover ||= hasDeadRegion && paths.length > 0;
       for (let i = 0; i < names.length; i++) {

@@ -33,7 +33,11 @@ const base: ArchGraph = {
     { from: 'web-3', to: 'cache' },
     { from: 'cache', to: 'db' },
     { from: 'db', to: 'replica', label: 'replicate' },
+    { from: 'web-1', to: 'sessions' },
     { from: 'web-2', to: 'sessions' },
+    { from: 'web-3', to: 'sessions' },
+    { from: 'web-1', to: 'queue', label: 'photo jobs' },
+    { from: 'web-2', to: 'queue', label: 'photo jobs' },
     { from: 'web-3', to: 'queue', label: 'photo jobs' },
     { from: 'queue', to: 'worker' },
   ],
@@ -50,7 +54,7 @@ export const labConfig: SimConfig = {
     { at: 0, type: 'traffic', rps: 2400, label: 'Normal evening' },
     { at: 0, type: 'jobs', perSec: 30, label: 'Photo filters' },
   ],
-  goals: { durationSec: 240 },
+  goals: { minUptime: 0.95, maxP95Ms: 400, durationSec: 240 },
   knobs: [
     { id: 'rps', label: 'Traffic (requests/sec)', type: 'slider', min: 500, max: 6000, step: 100, initial: 2400 },
     { id: 'servers', label: 'Web servers', type: 'slider', min: 1, max: 6, step: 1, initial: 3 },
@@ -71,7 +75,7 @@ export const labTasks = [
 export const missionConfig: SimConfig = {
   start: base,
   palette: ['logging', 'metrics', 'ci', 'web', 'cache', 'worker'],
-  budget: 1700,
+  budget: 2200,
   locked: LOCKED,
   events: [
     { at: 0, type: 'traffic', rps: 2400, label: 'Morning traffic' },
@@ -83,7 +87,7 @@ export const missionConfig: SimConfig = {
     { at: 38, type: 'message', who: 'ravi', text: 'Logs show the 500s come from web-2 only, and the tests for release 2 failed in CI. Roll it back!' },
     { at: 42, type: 'revive', target: 'web-2' },
     { at: 50, type: 'message', who: 'maya', text: 'Memories launch in 3, 2, 1...' },
-    { at: 52, type: 'traffic', rps: 4200, label: '"Memories" launch' },
+    { at: 52, type: 'traffic', rps: 6500, label: '"Memories" launch' },
     { at: 70, type: 'jobs', perSec: 60, label: 'Everyone re-filters old photos' },
     { at: 78, type: 'message', who: 'pager', text: 'BZZT. web-3 disk at 97%... 99%...' },
     { at: 82, type: 'kill', target: 'web-3', label: 'web-3: disk full' },
@@ -92,11 +96,11 @@ export const missionConfig: SimConfig = {
     { at: 105, type: 'traffic', rps: 3000, label: 'Evening calm' },
     { at: 112, type: 'message', who: 'maya', text: 'Three releases, zero angry tweets. Is this what "boring" feels like?' },
   ],
-  goals: { minUptime: 0.97, maxP95Ms: 300, maxCost: 1700, durationSec: 120 },
+  goals: { minUptime: 0.97, maxP95Ms: 300, maxQueue: 200, maxCost: 2200, durationSec: 120 },
 };
 
 export const missionHints = [
   'Place one Logging node, one Metrics node and one CI node, and connect the web servers to them. Tools are cheap compared with a 3 AM outage.',
   'The bad release and the full disk each take out one web server. With only three, the other two run hot during the Memories launch: one extra web server gives you headroom.',
-  'Photo jobs double at t=70. If the queue grows, add a photo worker. Keep the whole board under 1,700 credits (the pre-built system counts too).',
+  'Photo jobs double at t=70. If the queue grows, add a photo worker. Keep the whole board under 2,200 credits (the pre-built system counts too).',
 ];

@@ -165,6 +165,12 @@ export function ArchCanvas({ graph, state, time = state?.t ?? 0, editable = fals
           {selectedNode && <><button type="button" className={button} onClick={() => setSelected(null)}>Cancel</button><button type="button" className={button} onClick={() => onChange?.({ ...graph, edges: graph.edges.filter(e => e.from !== selected && e.to !== selected) })}><Unplug size={13} />Disconnect</button>
             <button type="button" className={button} disabled={locked.includes(selectedNode.id)} onClick={() => { onChange?.({ nodes: graph.nodes.filter(n => n.id !== selected), edges: graph.edges.filter(e => e.from !== selected && e.to !== selected) }); setSelected(null); }}><Trash2 size={13} />Remove</button></>}
         </div>
+        {selectedNode && (selectedNode.kind === 'datacenter' || selectedNode.kind === 'nosql') && <div className="flex flex-wrap items-center gap-3 border-t border-slate-800 px-4 py-3">
+          <label className="text-xs font-semibold text-slate-300" htmlFor={`${gridId}-region`}>{selectedNode.kind === 'datacenter' ? 'Region name' : 'Component name'}</label>
+          <input id={`${gridId}-region`} className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100" value={selectedNode.label ?? ''}
+            onChange={e => onChange?.({ ...graph, nodes: graph.nodes.map(n => n.id === selectedNode.id ? { ...n, label: e.target.value } : n) })} />
+          <span className="text-xs text-slate-500">{selectedNode.kind === 'datacenter' ? 'Use US-West or US-East for regional failure events and geoDNS.' : 'Name this node Session store to use it for shared sessions.'}</span>
+        </div>}
         {palette.length > 0 && <div className="flex items-stretch gap-2 overflow-x-auto border-t border-slate-800 bg-slate-900/40 p-3" aria-label="Component palette"><div className="flex min-w-16 flex-col items-center justify-center gap-1 text-[10px] font-bold tracking-wider text-slate-500 uppercase"><Plus size={20} />Build</div>{palette.map(kind => <PaletteItem key={kind} kind={kind} disabled={budget !== undefined && cost + COMPONENTS[kind].cost > budget} onAdd={() => add(kind)} />)}</div>}
         <p role="status" className="sr-only">{notice}</p>
       </>}

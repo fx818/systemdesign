@@ -45,16 +45,16 @@ const withQueue: ArchGraph = {
 
 export const labConfig: SimConfig = {
   start: withQueue,
-  palette: ['worker'],
+  palette: ['worker', 'web'],
   budget: 2000,
   events: [
-    { at: 0, type: 'traffic', rps: 3000, label: 'Filter launch' },
+    { at: 0, type: 'traffic', rps: 1800, label: 'Filter launch' },
     { at: 0, type: 'jobs', perSec: 80, label: 'Photo jobs' },
     { at: 5, type: 'message', who: 'ravi', text: 'Photo jobs are flowing in. Turn the workers knob down and watch the queue length graph climb, then fix it.' },
   ],
-  goals: { durationSec: 240 },
+  goals: { minUptime: 0.95, maxP95Ms: 400, durationSec: 240 },
   knobs: [
-    { id: 'rps', label: 'Page traffic (requests/sec)', type: 'slider', min: 500, max: 8000, step: 500, initial: 3000 },
+    { id: 'rps', label: 'Page traffic (requests/sec)', type: 'slider', min: 500, max: 8000, step: 100, initial: 1800 },
     { id: 'workers', label: 'Photo workers', type: 'slider', min: 0, max: 10, step: 1, initial: 2 },
   ],
   locked: ['client', 'mobile', 'lb', 'web-1', 'web-2', 'queue', 'db', 'nosql', 'storage'],
@@ -71,11 +71,12 @@ export const labTasks = [
 export const missionConfig: SimConfig = {
   start: noQueue,
   palette: ['queue', 'worker', 'web'],
-  budget: 1300,
+  budget: 1850,
   locked: ['client', 'mobile', 'lb', 'web-1', 'web-2', 'db', 'nosql', 'storage'],
-  knobs: [{ id: 'workers', label: 'Photo workers', type: 'slider', min: 0, max: 10, step: 1, initial: 0 }],
+  // Place real workers so one crash leaves other consumers running.
+  knobs: [],
   events: [
-    { at: 0, type: 'traffic', rps: 2500, label: 'Filters are live' },
+    { at: 0, type: 'traffic', rps: 2200, label: 'Filters are live' },
     { at: 0, type: 'jobs', perSec: 40, label: 'Normal uploads' },
     { at: 3, type: 'message', who: 'maya', text: 'Uploads with filters take 20 seconds. Make it stop!' },
     { at: 15, type: 'message', who: 'ravi', text: 'Put a queue between the web servers and the slow work, and let workers consume it.' },
@@ -87,11 +88,11 @@ export const missionConfig: SimConfig = {
     { at: 65, type: 'jobs', perSec: 30, label: 'Contest over' },
     { at: 67, type: 'message', who: 'ravi', text: 'The queue is nearly empty. Do we still need all those workers?' },
   ],
-  goals: { maxP95Ms: 300, maxQueue: 400, minUptime: 0.98, maxCost: 1300, durationSec: 90 },
+  goals: { maxP95Ms: 300, maxQueue: 400, minUptime: 0.98, maxCost: 1850, durationSec: 90 },
 };
 
 export const missionHints = [
-  'Place a Message queue node. Connect the web servers to it (they publish) and the queue to workers (they consume). Uploads stop blocking the web tier.',
-  'When the contest starts at 30 s, the jobs per second quadruple. Raise the workers before the queue crosses the red line.',
-  'After the contest (65 s) the queue is almost empty. Scale the workers back down; idle workers waste credits and cost you a star.',
+  'Add a third web server behind the LB and connect it to the database and session store. Place a Message queue node. Connect the web servers to it (they publish) and the queue to workers (they consume). Uploads stop blocking the web tier.',
+  'When the contest starts at 30 s, the jobs per second quadruple. Place five connected workers before the contest: four survivors still process 200 jobs/sec when one crashes.',
+  'After the contest (65 s) the queue is almost empty. Remove surplus workers after the contest; idle workers waste credits and cost you a star.',
 ];

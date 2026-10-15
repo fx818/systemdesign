@@ -18,9 +18,9 @@ export const labConfig: SimConfig = {
     ],
   },
   palette: ['web', 'db'],
-  budget: 600,
+  budget: 850,
   events: [{ at: 0, type: 'traffic', rps: 300, label: 'Book club evening' }],
-  goals: { durationSec: 180 },
+  goals: { minUptime: 0.95, maxP95Ms: 400, durationSec: 180 },
   knobs: [
     { id: 'rps', label: 'Traffic (requests/sec)', type: 'slider', min: 0, max: 4000, step: 100, initial: 300 },
     { id: 'servers', label: 'Web servers', type: 'slider', min: 1, max: 4, step: 1, initial: 1 },
@@ -52,7 +52,7 @@ export const missionConfig: SimConfig = {
     ],
   },
   palette: ['web', 'db', 'nosql'],
-  budget: 400,
+  budget: 500,
   locked: ['client', 'mobile', 'dns', 'web-1'],
   events: [
     { at: 0, type: 'traffic', rps: 200, label: 'Normal evening' },
@@ -63,11 +63,11 @@ export const missionConfig: SimConfig = {
     { at: 46, type: 'message', who: 'maya', text: 'The forum post went viral. Hold on!' },
     { at: 70, type: 'traffic', rps: 400, label: 'Everyone goes to bed' },
   ],
-  goals: { minUptime: 0.97, maxP95Ms: 250, maxCost: 400, durationSec: 90 },
+  goals: { minUptime: 0.97, maxP95Ms: 250, maxCost: 500, durationSec: 90 },
 };
 
 export const missionHints = [
   'Place a Database node and connect web-1 to it. Now the web server only does web work and the database gets its own machine.',
   'PixelPost data (users, photos, albums) is relational with lots of joins, so a relational Database is the right pick, not NoSQL.',
-  'One database next to the existing server fits comfortably in the 400-credit budget. Extra boxes cost credits and stars. Split the tiers and let it run.',
+  'One database next to the existing server fits comfortably in the 500-credit budget. Extra boxes cost credits and stars. Split the tiers and let it run.',
 ];

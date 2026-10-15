@@ -21,6 +21,7 @@ const twoDcs: ArchGraph = {
     { from: 'client', to: 'dns' },
     { from: 'mobile', to: 'dns' },
     { from: 'client', to: 'cdn', label: 'static' },
+    { from: 'mobile', to: 'cdn', label: 'static' },
     { from: 'dns', to: 'us-west', label: 'geo-routed' },
     { from: 'dns', to: 'us-east', label: 'geo-routed' },
     { from: 'us-west', to: 'web-w' },
@@ -41,7 +42,7 @@ export const labConfig: SimConfig = {
     { at: 0, type: 'traffic', rps: 4000, label: 'Two coasts, one PixelPost' },
     { at: 5, type: 'message', who: 'ravi', text: 'Drag the split slider: that is the x% geoDNS sends to US-East.' },
   ],
-  goals: { durationSec: 240 },
+  goals: { minUptime: 0.95, maxP95Ms: 400, durationSec: 240 },
   knobs: [
     { id: 'split', label: 'geoDNS split: % to US-East', type: 'slider', min: 0, max: 100, step: 5, initial: 50 },
     { id: 'replicas', label: 'Cross-DC replication (0 = off)', type: 'slider', min: 0, max: 2, step: 1, initial: 1 },
@@ -61,7 +62,7 @@ export const labTasks = [
 export const missionConfig: SimConfig = {
   start: twoDcs,
   palette: ['web', 'db-replica', 'cache'],
-  budget: 2200,
+  budget: 2250,
   locked: ['client', 'mobile', 'dns', 'us-west', 'us-east', 'db-w', 'db-e'],
   knobs: [{ id: 'split', label: 'geoDNS split: % to US-East', type: 'slider', min: 0, max: 100, step: 5, initial: 50 }],
   events: [
@@ -74,11 +75,11 @@ export const missionConfig: SimConfig = {
     { at: 70, type: 'message', who: 'maya', text: 'West Coast users are posting from US-East. Are their old photos there?!' },
     { at: 85, type: 'message', who: 'ravi', text: 'Hold steady. The storm is moving on.' },
   ],
-  goals: { minUptime: 0.995, maxP95Ms: 400, maxCost: 2200, durationSec: 100 },
+  goals: { minUptime: 0.995, maxP95Ms: 400, maxCost: 2250, durationSec: 100 },
 };
 
 export const missionHints = [
-  'Connect db-w and db-e with a replication link (place a DB replica in the other data center). Without it, failed-over users find their data missing.',
-  'After the outage US-East carries 100% of the traffic. Add a web server in US-East before 40 s so it does not overload.',
+  'Connect db-w directly to db-e with a replication link; both databases already exist, so this costs no extra credits. Without it, failed-over users find their data missing.',
+  'After the outage US-East carries 100% of the traffic. Add a web server in US-East before 40 s. Connect us-east to the new server and the server to db-e so it belongs to the surviving region.',
   'One replication path and one extra East web server are enough. Anything more eats the budget.',
 ];
