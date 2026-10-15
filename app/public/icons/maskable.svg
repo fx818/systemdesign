@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#101b33"/>
+      <stop offset="1" stop-color="#020617"/>
+    </linearGradient>
+    <linearGradient id="arrow" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#7c3aed"/>
+      <stop offset="1" stop-color="#a78bfa"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="5" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- full-bleed background (maskable: no rounded corners, content in safe zone) -->
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <circle cx="140" cy="110" r="200" fill="#22d3ee" opacity="0.07"/>
+  <circle cx="400" cy="420" r="180" fill="#a78bfa" opacity="0.06"/>
+
+  <g transform="translate(56.32 56.32) scale(0.78)">
+    <!-- neon cyan server stack -->
+    <g filter="url(#glow)">
+      <rect x="96" y="128" width="240" height="56" rx="14" fill="#0b1424" stroke="#22d3ee" stroke-width="5"/>
+      <rect x="96" y="200" width="240" height="56" rx="14" fill="#0b1424" stroke="#22d3ee" stroke-width="5"/>
+      <rect x="96" y="272" width="240" height="56" rx="14" fill="#0b1424" stroke="#22d3ee" stroke-width="5"/>
+      <circle cx="124" cy="156" r="6" fill="#22d3ee"/>
+      <circle cx="144" cy="156" r="6" fill="#22d3ee" opacity="0.5"/>
+      <circle cx="124" cy="228" r="6" fill="#34d399"/>
+      <circle cx="144" cy="228" r="6" fill="#22d3ee" opacity="0.5"/>
+      <circle cx="124" cy="300" r="6" fill="#22d3ee"/>
+      <circle cx="144" cy="300" r="6" fill="#fbbf24" opacity="0.7"/>
+      <rect x="272" y="148" width="40" height="6" rx="3" fill="#22d3ee" opacity="0.55"/>
+      <rect x="272" y="164" width="40" height="6" rx="3" fill="#22d3ee" opacity="0.3"/>
+      <rect x="272" y="220" width="40" height="6" rx="3" fill="#22d3ee" opacity="0.55"/>
+      <rect x="272" y="236" width="40" height="6" rx="3" fill="#22d3ee" opacity="0.3"/>
+      <rect x="272" y="292" width="40" height="6" rx="3" fill="#22d3ee" opacity="0.55"/>
+      <rect x="272" y="308" width="40" height="6" rx="3" fill="#22d3ee" opacity="0.3"/>
+    </g>
+
+    <!-- violet growth arrow -->
+    <g filter="url(#glow)">
+      <path d="M116 372 L196 300 L252 332 L384 164" fill="none" stroke="url(#arrow)" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M384 164 L374.8 217.8 L333.9 185.7 Z" fill="#a78bfa" stroke="#a78bfa" stroke-width="10" stroke-linejoin="round"/>
+    </g>
+
+    <!-- SD -->
+    <text x="256" y="452" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="bold" font-size="64" fill="#e2e8f0" letter-spacing="6">SD</text>
+  </g>
+</svg>
