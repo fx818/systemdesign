@@ -1,3 +1,5 @@
+import { levelMetas, loadLevel } from '@/content/registry';
+import { nextLevel } from '@/game/unlocks';
 import { motion } from 'framer-motion';
 import { Check, ChevronRight, Lock } from 'lucide-react';
 import { useEffect } from 'react';
@@ -45,6 +47,11 @@ function LevelHub({ level }: { level: LevelDef }) {
   const navigate = useNavigate();
   const progress = useGame((s) => s.progress[level.id]);
   const completeStep = useGame((s) => s.completeStep);
+
+  useEffect(() => {
+    const next = nextLevel(levelMetas, level.id);
+    if (next) void loadLevel(next.id).catch(() => { /* Optional prefetch; routes can retry. */ });
+  }, [level.id]);
 
   const done = new Set(progress?.completedSteps ?? []);
   const hasMiniGames = level.miniGames.length > 0;

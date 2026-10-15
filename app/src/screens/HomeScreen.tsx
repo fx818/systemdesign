@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { chapters, getChapter } from '@/content/chapters';
 import { PracticeCards } from '@/screens/practice/PracticeCards';
-import { levels, levelsInChapter, chapterOf } from '@/content/registry';
+import { levelMetas as levels, levelsInChapter, chapterOf } from '@/content/registry';
 import { useGame, FLASHBACK_SIZE, isLevelUnlocked, pickFlashback, rankProgress, streakAlive, todayKey } from '@/game';
 import type { LevelLike } from '@/game';
 import { ProgressBar, StarRow } from '@/components/ui';

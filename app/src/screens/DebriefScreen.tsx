@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronRight, MapPin } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { levels } from '@/content/registry';
+import { levelMetas as levels } from '@/content/registry';
 import { computeStars, isLevelUnlocked, nextLevel, useGame } from '@/game';
 import type { LevelDef } from '@/types/content';
 import { BadgeChip, Button, Card, Modal, StarRow } from '@/components/ui';

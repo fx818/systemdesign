@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
-import { levelsInChapter } from '@/content/registry';
+import { levelsInChapter } from '@/content/registry.eager';
 import type { ArchGraph, ComponentKind, LevelDef, SimConfig } from '@/types/content';
 import { createSim, initialKnobs } from '@/sim';
 import { goalMeters, missionResult } from '@/sim/mission';

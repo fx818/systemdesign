@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { levels } from '@/content/registry';
+import { levelMetas as levels } from '@/content/registry';
 import type { ArchGraph, ComponentKind } from '@/types/content';
 import { useGame, isDone } from '@/game';
 import { Icon } from '@/components/ui';
@@ -50,7 +50,7 @@ const KIND_ICON: Record<ComponentKind, string> = {
   storage: 'hard-drive',
 };
 
-/** Fallback "full architecture" used until the boss level's graph lands. */
+/** Static Chapter 1 HQ architecture, independent of lazy mission content. */
 export const FALLBACK_GRAPH: ArchGraph = {
   nodes: [
     { id: 'client', kind: 'client', label: 'Web client', x: 70, y: 280 },
@@ -108,15 +108,12 @@ export function ArchitectureMap() {
   const navigate = useNavigate();
   const progress = useGame((s) => s.progress);
 
-  const boss = levels.find((l) => l.boss);
-  // Launch Night starts with users only. Use the full design for the HQ map
-  // until a boss definition actually includes the finished architecture.
-  const graph = boss && boss.mission.config.start.nodes.some((node) => node.kind === 'web')
-    ? boss.mission.config.start : FALLBACK_GRAPH;
+  const graph = FALLBACK_GRAPH;
+  const chapterLevels = useMemo(() => levels.filter(level => (level.chapter ?? 1) === 1), []);
 
   const completedNumbers = useMemo(
-    () => new Set(levels.filter((l) => isDone(progress, l)).map((l) => l.number)),
-    [progress],
+    () => new Set(chapterLevels.filter((l) => isDone(progress, l)).map((l) => l.number)),
+    [progress, chapterLevels],
   );
 
   const nodeById = useMemo(() => new Map(graph.nodes.map((n) => [n.id, n])), [graph]);
@@ -125,7 +122,7 @@ export function ArchitectureMap() {
 
   const openLevel = (kind: ComponentKind) => {
     const n = INTRO_LEVEL[kind];
-    const level = levels.find((l) => l.number === n);
+    const level = chapterLevels.find((l) => l.number === n);
     if (level && completedNumbers.has(n)) navigate(`/level/${level.id}`);
   };
 

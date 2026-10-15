@@ -54,11 +54,10 @@ export default defineConfig({
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
   build: {
+    manifest: true,
     rollupOptions: {
       output: {
-        // registry.ts eagerly imports every level, so true per-level lazy loading is not
-        // possible from here — instead we split deterministic chunks: vendor libs,
-        // per-chapter content, and the heavy sim/quiz engines.
+        // Share vendor libraries and engines; dynamic level imports keep their own chunks.
         manualChunks(id: string) {
           if (id.includes('node_modules')) {
             if (/[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/.test(id) || id.includes('react-router'))
@@ -69,10 +68,6 @@ export default defineConfig({
             if (id.includes('lucide-react')) return 'vendor-lucide';
             if (id.includes('zustand')) return 'vendor-state';
             return 'vendor';
-          }
-          if (/[\\/]src[\\/]content[\\/]ch\d+[\\/]/.test(id)) {
-            const m = id.match(/[\\/]src[\\/]content[\\/](ch\d+)[\\/]/);
-            return m ? m[1] : undefined;
           }
           if (id.includes('/src/sim/') || id.includes('\\src\\sim\\')) return 'sim';
           if (id.includes('/src/quiz/') || id.includes('\\src\\quiz\\')) return 'quiz';

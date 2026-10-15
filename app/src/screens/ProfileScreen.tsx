@@ -2,7 +2,7 @@ import { PracticeProfile } from '@/screens/practice/PracticeProfile';
 import { Flame, RotateCcw, Trophy, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getChapter } from '@/content/chapters';
-import { levels } from '@/content/registry';
+import { levelMetas as levels } from '@/content/registry';
 import { completedCount, rankProgress, useGame } from '@/game';
 import { BadgeChip, Button, Card, ProgressBar, StarRow } from '@/components/ui';
 

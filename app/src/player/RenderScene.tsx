@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { getLevel } from '@/content/registry';
+import { useLevel } from '@/content/registry';
+import type { LevelDef } from '@/types/content';
+import { LevelLoading } from '@/components/ui/LevelLoading';
 
 /**
  * `/render/:levelId` — renders ONLY the lesson scene (non-interactive, 1280x720 logical canvas).
@@ -14,9 +16,17 @@ import { getLevel } from '@/content/registry';
  */
 export function RenderScene() {
   const { levelId } = useParams<{ levelId: string }>();
-  const level = levelId ? getLevel(levelId) : undefined;
+  const { level, loading, error } = useLevel(levelId);
+  if (loading || error) return <div className="fixed inset-0 flex items-center justify-center bg-slate-950"><LevelLoading id={levelId ?? ''} error={error} /></div>;
+  if (!level) return <div className="fixed inset-0 flex items-center justify-center bg-slate-950 text-slate-500">Level not found: {levelId}</div>;
+  return <LoadedScene key={level.id} level={level} />;
+}
+
+// Mount only after loading: initial ?t= is clamped against the real duration,
+// and the exporter control is never exposed before the scene has rendered.
+function LoadedScene({ level }: { level: LevelDef }) {
   const [params] = useSearchParams();
-  const duration = level?.lesson.duration ?? 0;
+  const duration = level.lesson.duration;
   const clamp = (t: number) => (Number.isFinite(t) ? Math.max(0, Math.min(duration, t)) : 0);
   const [time, setTime] = useState(() => clamp(Number(params.get('t'))));
   const [capture, setCapture] = useState(() => params.get('capture') === '1');
@@ -61,19 +71,6 @@ export function RenderScene() {
     window.addEventListener('resize', fit);
     return () => window.removeEventListener('resize', fit);
   }, [capture]);
-
-  if (!level) {
-    return (
-      <div className="fixed inset-0 bg-slate-950">
-        <div
-          className="absolute top-0 left-0 flex items-center justify-center text-slate-500"
-          style={{ width: 1280, height: 720 }}
-        >
-          Level not found: {levelId}
-        </div>
-      </div>
-    );
-  }
 
   const { Scene, captions } = level.lesson;
   const caption = captions.find((c) => time >= c.start && time < c.end)?.text;

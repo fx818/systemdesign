@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Clapperboard, Download, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { levels } from '@/content/registry';
+import { levelMetas as levels } from '@/content/registry';
 import { getChapter } from '@/content/chapters';
 import { Card } from '@/components/ui';
 
@@ -97,7 +97,7 @@ export function VideosScreen() {
                   <div className="space-y-3 p-4">
                     <div>
                       <h3 className="font-bold text-slate-100"><span className="mr-2 font-mono text-xs text-cyan-300">{level.id}</span>{level.title}</h3>
-                      <p className="mt-1 text-xs text-slate-400">{durationLabel(level.lesson.duration)} · {level.lesson.chapters.length} lesson sections</p>
+                      <p className="mt-1 text-xs text-slate-400">{durationLabel(level.lesson.duration)} · {level.lesson.sectionCount} lesson sections</p>
                     </div>
                     <div className="flex flex-wrap items-center gap-4 text-sm">
                       <Link to={`/render/${level.id}`} className="inline-flex items-center gap-1.5 text-cyan-300 hover:text-cyan-200">

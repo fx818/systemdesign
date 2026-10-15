@@ -11,8 +11,12 @@ import type { SimRunnerProps } from './simBridge';
 
 const registry = vi.hoisted(() => ({ levels: [] as LevelDef[] }));
 vi.mock('@/content/registry', () => ({
-  get levels() { return registry.levels; },
-  getLevel: (id: string) => registry.levels.find((level) => level.id === id),
+  get levelMetas() { return registry.levels.map(level => ({ ...level, lesson: { duration: level.lesson.duration, sectionCount: level.lesson.chapters.length } })); },
+  getLevelMeta: (id: string) => registry.levels.find(level => level.id === id),
+  chapterOf: (level: LevelDef) => level.chapter ?? 1,
+  levelsInChapter: (chapter: number) => registry.levels.filter(level => (level.chapter ?? 1) === chapter),
+  loadLevel: (id: string) => Promise.resolve(registry.levels.find(level => level.id === id)),
+  useLevel: (id: string) => ({ level: registry.levels.find(level => level.id === id), loading: false }),
 }));
 vi.mock('./simBridge', () => ({ SimRunnerBridge: ({ onLifeLost, onRetry }: SimRunnerProps) => <div>
   Simulator
