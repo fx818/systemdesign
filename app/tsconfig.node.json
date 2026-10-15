@@ -5,6 +5,7 @@
     "target": "es2023",
     "lib": ["ES2023", "DOM"],
     "types": ["node"],
+    "paths": { "@/*": ["./src/*.ts", "./src/*.tsx", "./src/*"] },
     "skipLibCheck": true,
 
     /* Bundler mode */

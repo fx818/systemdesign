@@ -104,7 +104,7 @@ function QpsPart({ time: t, interactive, onHotspot }: PartProps) {
   const lines = [
     { at: 50, text: 'DAU = 10M × 50% = 5M' },
     { at: 56, text: 'posts/s = 5M × 2 / 86,400 s' },
-    { at: 61, text: '≈ 10M / 100,000 ≈ 100  (exact: 116)', color: '#047857' },
+    { at: 61, text: '≈ 10M / 100,000 ≈ 100  (closer: ≈116)', color: '#047857' },
     { at: 68, text: 'views/s = 5M × 50 / 86,400 s' },
     { at: 73, text: '≈ 2,900 read QPS', color: '#047857', bold: true },
   ];

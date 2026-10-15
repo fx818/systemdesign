@@ -10,7 +10,7 @@ export default defineConfig({
   reporter: 'list',
   use: {
     actionTimeout: 10_000,
-    baseURL: 'http://127.0.0.1:4173',
+    baseURL: 'http://127.0.0.1:4190',
     channel: 'chrome',
     headless: true,
     viewport: { width: 1440, height: 1000 },
@@ -19,8 +19,8 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   webServer: {
-    command: 'npm run build && npx vite preview --host 127.0.0.1 --port 4173 --strictPort',
-    url: 'http://127.0.0.1:4173',
+    command: 'npm run build && npx vite preview --host 127.0.0.1 --port 4190 --strictPort',
+    url: 'http://127.0.0.1:4190',
     reuseExistingServer: false,
     timeout: 120_000,
     // Playwright starts this process in the background and stops it after the suite.

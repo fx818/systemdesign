@@ -18,7 +18,7 @@ export const captions: Caption[] = [
   c(48, 52, 'Step one: daily active users. 10 million times 50% is 5 million.'),
   c(52, 57, 'Queries per second: daily actions divided by the seconds in a day.'),
   c(57, 61, 'A day has 86,400 seconds. Round it to 100,000.'),
-  c(61, 66, 'So 10 million posts a day is about 100 posts per second. Exactly: 116.'),
+  c(61, 66, 'So 10 million posts a day is about 100 posts per second. More closely: about 116.'),
   c(66, 70, 'Close enough. Precision is not the point.'),
   c(70, 75, 'Reads: 5 million users times 50 views, over 86,400 seconds...'),
   c(75, 79, '...is about 2,900 read queries per second.'),

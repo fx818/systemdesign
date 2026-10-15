@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { Home, RotateCcw, UserRound, Video, Wrench } from 'lucide-react';
 import { lazy, Suspense, useEffect } from 'react';
-import { Navigate, NavLink, Outlet, Route, Routes, useLocation } from 'react-router-dom';
+import { Navigate, NavLink, Route, Routes, useLocation, useOutlet } from 'react-router-dom';
 import { toast, Toaster } from '@/components/ui';
 import { ACHIEVEMENTS, useGame } from '@/game';
 import { RenderScene } from '@/player';
@@ -65,6 +65,9 @@ function Nav() {
 
 function Layout() {
   const location = useLocation();
+  // Capture the route element so the outgoing animation keeps its own screen.
+  // A live <Outlet /> switches early, mounting the incoming screen twice.
+  const outlet = useOutlet();
   useEffect(() => useGame.subscribe((state, previous) => {
     const gained = state.xp - previous.xp;
     if (gained > 0) toast(`+${gained} XP`, { icon: 'sparkles', tone: 'xp' });
@@ -83,7 +86,7 @@ function Layout() {
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.18, ease: 'easeOut' }}
           >
-            <Suspense fallback={<p className="text-slate-400">Loading practice…</p>}><Outlet /></Suspense>
+            <Suspense fallback={<p className="text-slate-400">Loading practice…</p>}>{outlet}</Suspense>
           </motion.div>
         </AnimatePresence>
       </main>

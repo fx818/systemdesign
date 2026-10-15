@@ -81,7 +81,7 @@ function BitsPart({ time: t, interactive, onHotspot }: PartProps) {
         </g>
       )}
       <Callout x={330} y={480} width={620} title="Why it matters" color={C.amber} size={17}
-        text="Every estimate of storage or bandwidth ends in bytes. Get the unit wrong and your answer is off by a factor of 8, or of 1,000."
+        text="Storage uses bytes; network bandwidth is often in bits per second. Mixing bits and bytes gives an 8× error. Always label units."
         appear={fadeWindow(t, 34, T.ascii, 0.5)} />
     </g>
   );
@@ -123,7 +123,7 @@ function AsciiPart({ time: t, interactive, onHotspot }: PartProps) {
         </Panel>
       </Hotspot>
       <Callout x={960} y={490} width={260} title="Napkin rule" color={C.cyan} size={15}
-        text="Plain text: about 1 byte per character. A 140-character caption is about 140 bytes."
+        text="ASCII text: 1 byte per character. A 140-character ASCII caption is 140 bytes. Other encodings can need more."
         appear={fadeWindow(t, 55, T.table, 0.5)} />
     </g>
   );

@@ -12,11 +12,11 @@ export const captions: Caption[] = [
   c(20, 25, 'The smallest unit of data is a bit: a single 0 or 1.'),
   c(25, 30, 'Bits on their own are tiny. We group them.'),
   c(30, 35, 'A byte is a sequence of 8 bits.'),
-  c(35, 42, 'Every storage or bandwidth estimate ends in bytes, so start there.'),
+  c(35, 42, 'Storage uses bytes; network rates often use bits per second. Label the units to avoid an eightfold error.'),
   c(42, 47, 'How big is text? An ASCII character uses one byte of memory: 8 bits.'),
   c(47, 52, 'The caption "PIXEL" is five characters, so five bytes, or 40 bits.'),
   c(52, 57, 'Each letter maps to its own 8-bit code. P is 01010000.'),
-  c(57, 62, 'Napkin rule: plain text costs about one byte per character.'),
+  c(57, 62, 'Napkin rule for ASCII text: one byte per character. Other encodings can need more.'),
   c(62, 66, 'Now the big units. They are all powers of two.'),
   c(66, 72, 'To get correct calculations, you need to know data volume units as powers of 2.'),
   c(72, 76, '2 to the 10th is about a thousand: one kilobyte, KB.'),
@@ -40,8 +40,8 @@ export const captions: Caption[] = [
 ];
 
 export const hotspots: Hotspot[] = [
-  { id: 'byte', title: 'Byte', body: 'A byte is a sequence of 8 bits. Data volume (storage, bandwidth, memory) is measured in bytes and their power-of-two multiples.' },
-  { id: 'ascii', title: 'ASCII character', body: 'An ASCII character uses one byte (8 bits) of memory. So plain text is roughly one byte per character: "PIXEL" is 5 bytes.' },
+  { id: 'byte', title: 'Byte', body: 'A byte is a sequence of 8 bits. Storage and memory use bytes and their multiples; network bandwidth is often in bits per second. Keep volume and rate units explicit.' },
+  { id: 'ascii', title: 'ASCII character', body: 'An ASCII character uses one byte (8 bits) of memory: "PIXEL" is 5 bytes. Non-ASCII characters can use multiple bytes, so state the encoding assumption.' },
   { id: 'powers', title: 'Table 2-1: powers of two', body: '2^10 ≈ 1 thousand (KB), 2^20 ≈ 1 million (MB), 2^30 ≈ 1 billion (GB), 2^40 ≈ 1 trillion (TB), 2^50 ≈ 1 quadrillion (PB).' },
   { id: 'ladder', title: 'Converting units', body: 'Each unit is 2^10 = 1,024 times the previous one. Count the rungs between two units and multiply or divide by about 1,000 per rung.' },
 ];

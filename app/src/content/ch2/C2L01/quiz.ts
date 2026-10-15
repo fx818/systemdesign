@@ -86,7 +86,7 @@ export const quiz: QuizQuestion[] = [
 
 export const cards = [
   { front: 'How many bits in a byte?', back: '8. A byte is a sequence of 8 bits.' },
-  { front: 'How much memory does one ASCII character use?', back: 'One byte (8 bits). Plain text ≈ 1 byte per character.' },
+  { front: 'How much memory does one ASCII character use?', back: 'One byte (8 bits). This estimate assumes ASCII; non-ASCII characters can need multiple bytes.' },
   { front: 'KB, MB, GB, TB, PB as powers of two?', back: '2^10, 2^20, 2^30, 2^40, 2^50 bytes: about a thousand, million, billion, trillion, quadrillion.' },
   { front: 'The power-of-two shortcut?', back: '2^10 = 1,024 ≈ 1,000. Each +10 in the exponent adds about three zeros.' },
   { front: 'MB → TB?', back: 'Two rungs up the ladder: divide by about 1,000,000. 20 million MB ≈ 20 TB.' },

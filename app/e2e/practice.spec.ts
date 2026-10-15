@@ -1,11 +1,11 @@
 import { test as base, expect, type Page } from '@playwright/test';
 
 const test = base.extend<{ checkedPage: Page }>({
-  checkedPage: async ({ page }, use) => {
+  checkedPage: async ({ page }, runFixture) => {
     const errors: string[] = [];
     page.on('pageerror', error => errors.push(error.message));
     page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
-    await use(page);
+    await runFixture(page);
     expect(errors, 'Browser console/runtime errors').toEqual([]);
   },
 });
