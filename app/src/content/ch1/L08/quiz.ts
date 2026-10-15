@@ -1,0 +1,126 @@
+import type { ArchGraph, QuizQuestion } from '@/types/content';
+
+const statelessDesign: ArchGraph = {
+  nodes: [
+    { id: 'users', kind: 'client', label: 'Users', x: 120, y: 360 },
+    { id: 'lb', kind: 'lb', label: 'Load balancer', x: 380, y: 360 },
+    { id: 'web1', kind: 'web', label: 'Web 1', x: 660, y: 200 },
+    { id: 'web2', kind: 'web', label: 'Web 2', x: 660, y: 360 },
+    { id: 'web3', kind: 'web', label: 'Web 3', x: 660, y: 520 },
+    { id: 'store', kind: 'nosql', label: 'NoSQL', x: 1000, y: 220 },
+    { id: 'db', kind: 'db', label: 'Database', x: 1000, y: 500 },
+  ],
+  edges: [
+    { from: 'users', to: 'lb' },
+    { from: 'lb', to: 'web1' },
+    { from: 'lb', to: 'web2' },
+    { from: 'lb', to: 'web3' },
+    { from: 'web1', to: 'store' },
+    { from: 'web2', to: 'store' },
+    { from: 'web3', to: 'store' },
+    { from: 'web2', to: 'db' },
+  ],
+};
+
+export const quiz: QuizQuestion[] = [
+  {
+    id: 'L08-q1',
+    kind: 'mcq',
+    prompt: 'What makes a web server "stateful"?',
+    options: [
+      'It runs a database on the same machine',
+      'It remembers client data (state) from one request to the next',
+      'It sits behind a load balancer',
+      'It only serves static files',
+    ],
+    answer: 1,
+    explanation: 'A stateful server remembers client data between requests; a stateless server keeps no state information.',
+    page: 21,
+  },
+  {
+    id: 'L08-q2',
+    kind: 'bins',
+    prompt: 'Sort each statement: stateful web tier or stateless web tier?',
+    bins: ['Stateful', 'Stateless'],
+    items: [
+      { text: 'User A must always reach server 1', bin: 0 },
+      { text: 'Needs sticky sessions', bin: 0 },
+      { text: 'A crashed server takes sessions with it', bin: 0 },
+      { text: 'Any server can handle any request', bin: 1 },
+      { text: 'Session data lives in a shared store', bin: 1 },
+      { text: 'Easy to autoscale', bin: 1 },
+    ],
+    explanation: 'In a stateful tier each client is tied to the server holding its session. In a stateless tier, state sits in a shared data store, so servers are interchangeable and easy to add or remove.',
+    page: 22,
+  },
+  {
+    id: 'L08-q3',
+    kind: 'spot',
+    prompt: 'In this stateless design, click where User A\'s session data lives.',
+    diagram: statelessDesign,
+    answers: ['store'],
+    explanation: 'Session data is moved out of the web tier into a persistent shared store. The book chooses NoSQL for it.',
+    page: 23,
+  },
+  {
+    id: 'L08-q4',
+    kind: 'multi',
+    prompt: 'Which are downsides of keeping state on servers and using sticky sessions?',
+    options: [
+      'The load balancer has extra overhead',
+      'Adding or removing servers is much harder',
+      'Handling server failures is challenging',
+      'Users can only use the mobile app',
+    ],
+    answers: [0, 1, 2],
+    explanation: 'Sticky sessions route each client to the same server. That adds overhead, makes adding/removing servers difficult and makes server failures hard to handle.',
+    page: 21,
+  },
+  {
+    id: 'L08-q5',
+    kind: 'order',
+    prompt: 'A logged-in user loads the feed in the stateless design. Put the steps in order.',
+    items: [
+      'The user\'s HTTP request reaches the load balancer',
+      'The load balancer forwards it to any healthy web server',
+      'That web server fetches the session from the shared data store',
+      'The web server authenticates the user and returns the feed',
+    ],
+    explanation: 'HTTP requests can be sent to any web server, which fetches state data from the shared data store.',
+    page: 22,
+  },
+  {
+    id: 'L08-q6',
+    kind: 'mcq',
+    prompt: 'The shared session store could be a relational DB, Memcached/Redis or NoSQL. Why does the book choose NoSQL?',
+    options: ['It is the only one that stores sessions', 'It is easy to scale', 'It never loses data', 'It needs no servers'],
+    answer: 1,
+    explanation: 'All of them could work; NoSQL is chosen because it is easy to scale.',
+    page: 23,
+  },
+  {
+    id: 'L08-q7',
+    kind: 'truefalse',
+    prompt: 'Autoscaling the web tier becomes easy once state data is moved out of the web servers.',
+    answer: true,
+    explanation: 'Autoscaling adds or removes web servers automatically based on traffic load. With no state on the servers, any of them can come and go safely.',
+    page: 23,
+  },
+  {
+    id: 'L08-q8',
+    kind: 'numeric',
+    prompt: '30,000 logged-in users are spread evenly over 3 stateful web servers with sticky sessions. One server crashes. How many users lose their session?',
+    answer: 10000,
+    tolerance: 0,
+    unit: 'users',
+    explanation: 'Each server holds a third of the sessions: 30,000 / 3 = 10,000 users are logged out. With a shared session store, the answer would be 0.',
+    page: 21,
+  },
+];
+
+export const cards = [
+  { front: 'Stateful vs stateless server?', back: 'Stateful: remembers client data (state) between requests. Stateless: keeps no state; it fetches it from a shared store when needed.' },
+  { front: 'Problems with sticky sessions?', back: 'Extra load balancer overhead, adding/removing servers is hard, and server failures are hard to handle (sessions are lost).' },
+  { front: 'How do you make the web tier stateless?', back: 'Move session data out of the web servers into a shared persistent store (relational DB, Memcached/Redis or NoSQL; the book picks NoSQL as it is easy to scale).' },
+  { front: 'What is autoscaling?', back: 'Adding or removing web servers automatically based on traffic load. Easy once the web tier is stateless.' },
+];
