@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
-import { levels } from '@/content/registry';
+import { levelsInChapter } from '@/content/registry';
+const levels = levelsInChapter(1);
 import type { ArchGraph, ComponentKind, LevelDef, SimConfig } from '@/types/content';
 import { COMPONENTS, createSim, initialKnobs } from '@/sim';
 import { goalMeters, missionResult } from '@/sim/mission';
