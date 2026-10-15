@@ -216,7 +216,7 @@ test('direct links enforce next-level and boss prerequisites', async ({ checkedP
 });
 
 test('video render is fixed size, deterministic and noninteractive', async ({ checkedPage: page }) => {
-  await page.goto('/render/L13?t=80');
+  await page.goto('/render/L13?t=80&capture=1');
   await expect(page.getByRole('navigation')).toHaveCount(0);
   const scene = page.locator('svg').first();
   await expect(scene).toBeVisible();
