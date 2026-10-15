@@ -1,22 +1,26 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, RotateCcw } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { dueCards, todayKey, useGame } from '@/game';
+import { FLASHBACK_SIZE, pickFlashback, todayKey, useGame } from '@/game';
 import type { CardState } from '@/game';
 import { Button, Card, ProgressBar } from '@/components/ui';
 
 /** `/review` — the daily Flashback: flip a due card, then rate your recall. */
 export function ReviewScreen() {
-  const cards = useGame((s) => s.cards);
   const reviewCard = useGame((s) => s.reviewCard);
-  const today = todayKey();
-  const due = useMemo(() => dueCards(cards, today), [cards, today]);
+  // Freeze the session: rating a card changes its due date and must not shift
+  // the remaining cards or cause the index to skip an unreviewed card.
+  const [due] = useState(() => {
+    const state = useGame.getState();
+    const today = todayKey();
+    return pickFlashback(state.cards, today, Math.max(0, FLASHBACK_SIZE - (state.flashbackLog[today] ?? 0)));
+  });
 
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
 
-  const card: CardState | undefined = due[Math.min(index, due.length - 1)];
+  const card: CardState | undefined = due[index];
 
   const rate = (correct: boolean) => {
     if (!card) return;
@@ -47,7 +51,7 @@ export function ReviewScreen() {
             No cards are due today. Finish more levels to grow your deck, or come back tomorrow.
           </p>
         </Card>
-      ) : done ? (
+      ) : done || !card ? (
         <Card className="flex flex-col items-center gap-4 py-14 text-center">
           <div className="text-4xl">🎉</div>
           <h2 className="text-lg font-bold text-slate-100">Flashback complete</h2>

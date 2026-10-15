@@ -80,7 +80,9 @@ describe.each(Object.keys(questions) as QuizQuestion['kind'][])('grade: %s', (ki
     expect(grade(questions[kind], wrongResponses[kind])).toBe(false);
   });
   it('grades a kind-mismatched response false', () => {
-    const other: QuizResponse = { kind: 'truefalse', value: true };
+    const other: QuizResponse = kind === 'truefalse'
+      ? { kind: 'mcq', index: 0 }
+      : { kind: 'truefalse', value: true };
     expect(grade(questions[kind], other)).toBe(false);
   });
   it('grades null/undefined false', () => {
@@ -148,7 +150,10 @@ describe('isComplete', () => {
   it('is false before any interaction', () => {
     for (const kind of Object.keys(questions) as QuizQuestion['kind'][]) {
       expect(isComplete(questions[kind], null)).toBe(false);
-      expect(isComplete(questions[kind], { kind: 'truefalse', value: true })).toBe(false);
+      const mismatched: QuizResponse = kind === 'truefalse'
+        ? { kind: 'mcq', index: 0 }
+        : { kind: 'truefalse', value: true };
+      expect(isComplete(questions[kind], mismatched)).toBe(false);
     }
   });
   it('is true for the correct-shaped responses', () => {

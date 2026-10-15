@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/game';
 import type { LevelDef } from '@/types/content';
-import { Button, Card } from '@/components/ui';
+import { Button } from '@/components/ui';
 import { LevelGate } from './common';
 import { SimRunnerBridge, type SimRunResult } from './simBridge';
 
@@ -36,18 +36,7 @@ function Lab({ level }: { level: LevelDef }) {
         <p className="mt-1 max-w-2xl text-sm text-slate-400">{level.lab.intro}</p>
       </header>
 
-      {level.lab.tasks.length > 0 && (
-        <Card accent="emerald" className="mb-4">
-          <div className="mb-2 text-xs font-bold tracking-widest text-emerald-300 uppercase">Try this</div>
-          <ul className="list-inside list-disc space-y-1 text-sm text-slate-300">
-            {level.lab.tasks.map((t) => (
-              <li key={t}>{t}</li>
-            ))}
-          </ul>
-        </Card>
-      )}
-
-      <SimRunnerBridge config={level.lab.config} mode="lab" onFinish={finish} />
+      <SimRunnerBridge config={level.lab.config} mode="lab" tasks={level.lab.tasks} onFinish={finish} />
 
       <div className="mt-4 flex justify-end">
         <Button

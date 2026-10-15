@@ -27,7 +27,10 @@ export function isDone(progress: ProgressMap, level: LevelLike): boolean {
 
 export function isLevelUnlocked(level: LevelLike, all: readonly LevelLike[], progress: ProgressMap): boolean {
   if (level.boss) {
-    return all.filter((l) => !l.boss).every((l) => isDone(progress, l));
+    return Array.from({ length: level.number - 1 }, (_, i) => i + 1).every((number) => {
+      const required = all.find((candidate) => candidate.number === number && !candidate.boss);
+      return required !== undefined && isDone(progress, required);
+    });
   }
   if (level.number <= 1) return true;
   const prev = all.find((l) => !l.boss && l.number === level.number - 1);

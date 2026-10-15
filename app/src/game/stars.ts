@@ -4,7 +4,7 @@
  * - 0 stars: mission goals not met.
  * - 1 star:  goals met.
  * - 2 stars: goals met + within budget + interview passed (quiz >= 50%).
- * - 3 stars: goals met + within budget + interview passed + no hints used.
+ * - 3 stars: goals met + within budget + interview passed + no hints used + hearts remaining.
  */
 export interface StarInput {
   goalsMet: boolean;
@@ -13,14 +13,15 @@ export interface StarInput {
   quizScore: number;
   /** Hints used on this level. */
   hintsUsed: number;
+  heartsLeft?: number;
 }
 
 export const QUIZ_PASS_SCORE = 0.5;
 
-export function computeStars({ goalsMet, withinBudget, quizScore, hintsUsed }: StarInput): number {
+export function computeStars({ goalsMet, withinBudget, quizScore, hintsUsed, heartsLeft = 3 }: StarInput): number {
   if (!goalsMet) return 0;
   let stars = 1;
   if (withinBudget && quizScore >= QUIZ_PASS_SCORE) stars = 2;
-  if (stars === 2 && hintsUsed === 0) stars = 3;
+  if (stars === 2 && hintsUsed === 0 && heartsLeft > 0) stars = 3;
   return stars;
 }

@@ -50,7 +50,7 @@ export function Dialogue({ lines, onDone }: DialogueProps) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement | null)?.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'BUTTON' || e.repeat) return;
       if (e.code === 'Space' || e.code === 'Enter') {
         e.preventDefault();
         advance();
@@ -62,7 +62,7 @@ export function Dialogue({ lines, onDone }: DialogueProps) {
 
   if (!line) {
     return (
-      <div className="flex justify-center p-10 text-slate-500">No dialogue written yet.</div>
+      <div className="flex justify-center p-10"><Button onClick={onDone}>Continue</Button></div>
     );
   }
 

@@ -136,6 +136,7 @@ describe('QuestionView: order', () => {
 
   it('keyboard sorting (Space/Arrow/Space) reorders, then grades correctly', async () => {
     const onAnswer = vi.fn();
+    const user = userEvent.setup();
     render(<QuestionView question={order2} onAnswer={onAnswer} />);
     // sanity: the shuffled start is reversed for a 2-item list
     expect(screen.getByTestId('order-row-0')).toHaveTextContent(order2.items[1]);
@@ -148,9 +149,11 @@ describe('QuestionView: order', () => {
     first.focus();
     expect(document.activeElement).toBe(first);
 
-    fireEvent.keyDown(first, { code: 'Space', key: ' ' }); // lift
-    key('ArrowDown', 'ArrowDown'); // move down
-    key('Space', ' '); // drop
+    // Real keyboard events bubble from the focused row to document. Await each
+    // gesture so dnd-kit's keyboard sensor can attach after activation.
+    await user.keyboard('[Space]'); // lift
+    await user.keyboard('[ArrowDown]'); // move down
+    await user.keyboard('[Space]'); // drop
 
     await waitFor(() => {
       expect(screen.getByTestId('order-row-0')).toHaveTextContent(order2.items[0]);

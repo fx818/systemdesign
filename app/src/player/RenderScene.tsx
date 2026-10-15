@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { getLevel } from '@/content/registry';
 
 /**
@@ -10,14 +10,17 @@ import { getLevel } from '@/content/registry';
 export function RenderScene() {
   const { levelId } = useParams<{ levelId: string }>();
   const level = levelId ? getLevel(levelId) : undefined;
-  const [time, setTime] = useState(0);
+  const [params] = useSearchParams();
+  const duration = level?.lesson.duration ?? 0;
+  const clamp = (t: number) => Number.isFinite(t) ? Math.max(0, Math.min(duration, t)) : 0;
+  const [time, setTime] = useState(() => clamp(Number(params.get('t'))));
 
   useEffect(() => {
-    window.__setLessonTime = (t: number) => setTime(Math.max(0, t));
+    window.__setLessonTime = (t: number) => setTime(Number.isFinite(t) ? Math.max(0, Math.min(duration, t)) : 0);
     return () => {
       delete window.__setLessonTime;
     };
-  }, []);
+  }, [duration]);
 
   if (!level) {
     return (

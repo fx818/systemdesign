@@ -1,49 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/game';
-import { QuestionViewFallback, useQuizModule, type QuizResult } from '@/player';
+import { QuizRunner, type QuizResult } from '@/quiz';
 import type { QuizQuestion } from '@/types/content';
-import { Button, Card, ProgressBar } from '@/components/ui';
+import { Button, Card } from '@/components/ui';
 import { Avatar } from './characters';
 import { LevelGate } from './common';
-
-/** Minimal local QuizRunner used only while `@/quiz` has not landed. */
-function QuizRunnerFallback({
-  questions,
-  onFinish,
-}: {
-  questions: QuizQuestion[];
-  onFinish: (r: QuizResult) => void;
-}) {
-  const [idx, setIdx] = useState(0);
-  const [correct, setCorrect] = useState(0);
-  const q = questions[idx];
-
-  if (!q) return null;
-  return (
-    <Card accent="cyan">
-      <div className="mb-3 flex items-center justify-between text-xs text-slate-500">
-        <span>
-          Question {idx + 1} / {questions.length}
-        </span>
-        <span className="font-mono">{q.kind}</span>
-      </div>
-      <ProgressBar value={idx / questions.length} color="cyan" className="mb-4" />
-      <QuestionViewFallback
-        question={q}
-        onAnswer={(ok) => {
-          const nextCorrect = correct + (ok ? 1 : 0);
-          if (idx + 1 >= questions.length) {
-            onFinish({ correct: nextCorrect, total: questions.length, xp: nextCorrect * 10 });
-          } else {
-            setCorrect(nextCorrect);
-            setIdx(idx + 1);
-          }
-        }}
-      />
-    </Card>
-  );
-}
 
 /** `/level/:id/quiz` — Ravi's interview round. */
 export function QuizScreen() {
@@ -56,14 +18,13 @@ export function QuizScreen() {
 
 function Quiz({ levelId, questions }: { levelId: string; questions: QuizQuestion[] }) {
   const navigate = useNavigate();
-  const quiz = useQuizModule();
   const completeStep = useGame((s) => s.completeStep);
   const recordQuizResult = useGame((s) => s.recordQuizResult);
   const addXp = useGame((s) => s.addXp);
   const [result, setResult] = useState<QuizResult | null>(null);
 
   const finish = (r: QuizResult) => {
-    recordQuizResult(levelId, r.total > 0 ? r.correct / r.total : 0);
+    recordQuizResult(levelId, r.total > 0 ? r.correct / r.total : 0, r.heartsLeft);
     addXp(r.xp);
     completeStep(levelId, 'quiz');
     setResult(r);
@@ -96,12 +57,8 @@ function Quiz({ levelId, questions }: { levelId: string; questions: QuizQuestion
             Continue to debrief
           </Button>
         </Card>
-      ) : quiz === undefined ? (
-        <Card className="flex items-center justify-center py-16 text-slate-500">Loading interview&hellip;</Card>
-      ) : quiz ? (
-        <quiz.QuizRunner questions={questions} onFinish={finish} />
       ) : (
-        <QuizRunnerFallback questions={questions} onFinish={finish} />
+        <QuizRunner questions={questions} onFinish={finish} />
       )}
     </div>
   );

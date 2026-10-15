@@ -37,12 +37,13 @@ function SortableRow({
 
   return (
     <div
-      ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={clsx('relative', isDragging && 'z-20')}
     >
       <button
+        ref={setNodeRef}
         type="button"
+        disabled={locked}
         {...attributes}
         {...listeners}
         data-testid={`order-row-${position}`}

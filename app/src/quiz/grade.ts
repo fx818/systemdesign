@@ -5,16 +5,10 @@
 import type { QuizQuestion } from '@/types/content';
 import type { QuizResponse } from './types';
 
-const sameNumberSet = (a: readonly number[], b: readonly number[]): boolean => {
-  if (a.length !== b.length) return false;
-  const set = new Set(a);
-  return b.every((v) => set.has(v));
-};
-
-const sameStringSet = (a: readonly string[], b: readonly string[]): boolean => {
-  if (a.length !== b.length) return false;
-  const set = new Set(a);
-  return b.every((v) => set.has(v));
+const sameSet = <T,>(a: readonly T[], b: readonly T[]): boolean => {
+  const left = new Set(a);
+  const right = new Set(b);
+  return left.size === right.size && [...right].every((v) => left.has(v));
 };
 
 /**
@@ -28,7 +22,7 @@ export function grade(question: QuizQuestion, response: QuizResponse | null | un
       return response.kind === 'mcq' && response.index === question.answer;
 
     case 'multi':
-      return response.kind === 'multi' && sameNumberSet(response.indices, question.answers);
+      return response.kind === 'multi' && sameSet(response.indices, question.answers);
 
     case 'order':
       return (
@@ -54,7 +48,7 @@ export function grade(question: QuizQuestion, response: QuizResponse | null | un
     }
 
     case 'spot':
-      return response.kind === 'spot' && sameStringSet(response.nodeIds, question.answers);
+      return response.kind === 'spot' && sameSet(response.nodeIds, question.answers);
 
     case 'label':
       return (

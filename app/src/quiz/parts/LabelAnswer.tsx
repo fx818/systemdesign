@@ -5,11 +5,11 @@
  */
 import {
   DndContext,
+  closestCenter,
   KeyboardSensor,
   PointerSensor,
   pointerWithin,
   useDraggable,
-  useDroppable,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -19,6 +19,8 @@ import type { QuizQuestion } from '@/types/content';
 import { useState } from 'react';
 import { MiniDiagram, NODE_DROPPABLE_PREFIX, type MiniDiagramReveal } from '../MiniDiagram';
 import { seededShuffle } from '../seeded';
+import { CSS } from '@dnd-kit/utilities';
+import { AnswerPool } from './AnswerPool';
 
 export interface LabelAnswerProps {
   question: Extract<QuizQuestion, { kind: 'label' }>;
@@ -40,7 +42,7 @@ function LabelChip({
   locked: boolean;
   onTap: () => void;
 }) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+  const { attributes, listeners, setNodeRef, isDragging, transform } = useDraggable({
     id: `label:${text}`,
     disabled: locked,
   });
@@ -48,6 +50,7 @@ function LabelChip({
     <button
       ref={setNodeRef}
       type="button"
+      style={{ transform: CSS.Translate.toString(transform) }}
       {...attributes}
       {...listeners}
       onClick={(e) => {
@@ -115,8 +118,6 @@ export function LabelAnswer({ question, value, onChange, locked }: LabelAnswerPr
     else if (assignments[nodeId] != null) assign(nodeId, null); // tap labelled node to clear
   };
 
-  const { setNodeRef: setPoolRef, isOver: overPool } = useDroppable({ id: POOL_ID });
-
   const assignedTexts = new Set(
     Object.values(assignments).filter((t): t is string => t != null),
   );
@@ -135,7 +136,7 @@ export function LabelAnswer({ question, value, onChange, locked }: LabelAnswerPr
 
   return (
     <div className="flex flex-col gap-3">
-      <DndContext sensors={sensors} collisionDetection={pointerWithin} onDragEnd={handleDragEnd}>
+      <DndContext sensors={sensors} collisionDetection={(args) => args.pointerCoordinates ? pointerWithin(args) : closestCenter(args)} onDragEnd={handleDragEnd}>
         <MiniDiagram
           graph={question.diagram}
           assignments={assignments}
@@ -143,15 +144,7 @@ export function LabelAnswer({ question, value, onChange, locked }: LabelAnswerPr
           onNodeClick={tapNode}
           reveal={reveal}
         />
-        <div
-          ref={setPoolRef}
-          className={clsx(
-            'flex min-h-14 flex-wrap items-center gap-2 rounded-xl border-2 border-dashed p-3 transition-colors',
-            overPool ? 'border-violet-400 bg-violet-400/10' : 'border-slate-700 bg-slate-950/40',
-          )}
-          aria-label="Label pool"
-          data-testid="label-pool"
-        >
+        <AnswerPool label="Label pool" testId="label-pool">
           {poolTexts.length === 0 ? (
             <span className="text-xs text-slate-600">Every label is placed.</span>
           ) : (
@@ -165,7 +158,7 @@ export function LabelAnswer({ question, value, onChange, locked }: LabelAnswerPr
               />
             ))
           )}
-        </div>
+        </AnswerPool>
       </DndContext>
       {!locked && (
         <p className="text-xs text-slate-500">

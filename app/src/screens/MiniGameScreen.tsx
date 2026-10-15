@@ -7,9 +7,10 @@ import { LevelGate } from './common';
 
 /** `/level/:id/minigame/:mg` — plays a bespoke mini-game from the level data. */
 export function MiniGameScreen() {
+  const { mg } = useParams<{ mg: string }>();
   return (
     <LevelGate>
-      {(level) => <MiniGame level={level} />}
+      {(level) => <MiniGame key={`${level.id}/${mg}`} level={level} />}
     </LevelGate>
   );
 }
@@ -19,6 +20,7 @@ function MiniGame({ level }: { level: LevelDef }) {
   const navigate = useNavigate();
   const completeStep = useGame((s) => s.completeStep);
   const addXp = useGame((s) => s.addXp);
+  const recordMiniGameResult = useGame((s) => s.recordMiniGameResult);
   const [score, setScore] = useState<number | null>(null);
 
   const def: MiniGameDef | undefined = level.miniGames.find((m) => m.id === mg) ?? level.miniGames[0];
@@ -37,8 +39,12 @@ function MiniGame({ level }: { level: LevelDef }) {
   }
 
   const finish = (s: number) => {
+    if (score !== null) return;
     const clamped = Math.max(0, Math.min(1, s));
-    completeStep(level.id, 'minigame');
+    recordMiniGameResult(level.id, def.id, clamped);
+    if (level.miniGames.every((game) => useGame.getState().miniGameResults[level.id]?.[game.id] !== undefined)) {
+      completeStep(level.id, 'minigame');
+    }
     addXp(Math.round(clamped * 50));
     setScore(clamped);
   };
@@ -63,6 +69,11 @@ function MiniGame({ level }: { level: LevelDef }) {
           <Button variant="violet" onClick={() => navigate(`/level/${level.id}`)}>
             Back to mission
           </Button>
+          {level.miniGames.filter((game) => useGame.getState().miniGameResults[level.id]?.[game.id] === undefined).map((game) => (
+            <Button key={game.id} variant="outline" onClick={() => navigate(`/level/${level.id}/minigame/${game.id}`)}>
+              Next drill: {game.title}
+            </Button>
+          ))}
         </Card>
       )}
     </div>

@@ -4,6 +4,7 @@
  */
 import {
   DndContext,
+  closestCenter,
   KeyboardSensor,
   PointerSensor,
   pointerWithin,
@@ -17,6 +18,8 @@ import { clsx } from 'clsx';
 import type { ReactNode } from 'react';
 import type { QuizQuestion } from '@/types/content';
 import { useState } from 'react';
+import { CSS } from '@dnd-kit/utilities';
+import { AnswerPool } from './AnswerPool';
 
 export interface BinsAnswerProps {
   question: Extract<QuizQuestion, { kind: 'bins' }>;
@@ -43,7 +46,7 @@ function Chip({
   state: 'pool' | 'in-bin' | 'correct' | 'wrong';
   onTap: () => void;
 }) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+  const { attributes, listeners, setNodeRef, isDragging, transform } = useDraggable({
     id: `chip-${index}`,
     disabled: locked,
   });
@@ -51,6 +54,7 @@ function Chip({
     <button
       ref={setNodeRef}
       type="button"
+      style={{ transform: CSS.Translate.toString(transform) }}
       {...attributes}
       {...listeners}
       onClick={(e) => {
@@ -92,6 +96,16 @@ function Bin({
     <div
       ref={setNodeRef}
       onClick={onTap}
+      role="button"
+      tabIndex={0}
+      aria-label={`Place selected item in ${name}`}
+      onKeyDown={(event) => {
+        if (event.target === event.currentTarget && (event.key === 'Enter' || event.code === 'Space')) {
+          event.preventDefault();
+          event.stopPropagation();
+          onTap();
+        }
+      }}
       data-testid={`bin-${index}`}
       data-bin={name}
       className={clsx(
@@ -145,8 +159,6 @@ export function BinsAnswer({ question, value, onChange, locked }: BinsAnswerProp
     else setTapped(tapped === i ? null : i);
   };
 
-  const { setNodeRef: setPoolRef, isOver: overPool } = useDroppable({ id: POOL_ID });
-
   const chipState = (i: number): 'pool' | 'in-bin' | 'correct' | 'wrong' => {
     if (!locked) return placements[i] == null ? 'pool' : 'in-bin';
     return placements[i] === question.items[i].bin ? 'correct' : 'wrong';
@@ -154,16 +166,8 @@ export function BinsAnswer({ question, value, onChange, locked }: BinsAnswerProp
 
   return (
     <div className="flex flex-col gap-3">
-      <DndContext sensors={sensors} collisionDetection={pointerWithin} onDragEnd={handleDragEnd}>
-        <div
-          ref={setPoolRef}
-          className={clsx(
-            'flex min-h-16 flex-wrap items-center gap-2 rounded-xl border-2 border-dashed p-3 transition-colors',
-            overPool ? 'border-violet-400 bg-violet-400/10' : 'border-slate-700 bg-slate-950/40',
-          )}
-          aria-label="Item pool"
-          data-testid="bins-pool"
-        >
+      <DndContext sensors={sensors} collisionDetection={(args) => args.pointerCoordinates ? pointerWithin(args) : closestCenter(args)} onDragEnd={handleDragEnd}>
+        <AnswerPool label="Item pool" testId="bins-pool">
           {placements.every((p) => p != null) ? (
             <span className="text-xs text-slate-600">Pool empty — every item is in a bin.</span>
           ) : (
@@ -181,7 +185,7 @@ export function BinsAnswer({ question, value, onChange, locked }: BinsAnswerProp
               ) : null,
             )
           )}
-        </div>
+        </AnswerPool>
 
         <div className="flex flex-col gap-2.5 sm:flex-row" role="group" aria-label="Bins">
           {question.bins.map((bin, bi) => (

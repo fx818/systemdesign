@@ -4,8 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui';
 import type { LessonDef } from '@/types/content';
-import { QuestionViewFallback } from './QuestionViewFallback';
-import { useQuizModule } from './quizBridge';
+import { QuestionView } from '@/quiz';
 
 export interface LessonPlayerProps {
   lesson: LessonDef;
@@ -74,17 +73,17 @@ export function LessonPlayer({ lesson, onComplete }: LessonPlayerProps) {
   const checkpoints = useMemo(() => [...lesson.checkpoints].sort((a, b) => a.at - b.at), [lesson]);
   const playingRef = useRef(playing);
   playingRef.current = playing;
-  const quiz = useQuizModule();
-  const QuestionView = quiz?.QuestionView ?? QuestionViewFallback;
 
   /* ------------------------------ transport ------------------------------ */
   const seek = useCallback(
     (v: number) => {
-      const t = Math.max(0, Math.min(duration, v));
+      const t = Number.isFinite(v) ? Math.max(0, Math.min(duration, v)) : 0;
+      setCheckpointIdx(null);
       timeRef.current = t;
       setTime(t);
       // Scrubbing re-arms checkpoints ahead of the playhead, disarms those passed.
       firedRef.current = new Set(checkpointsFiredBefore(lesson, t));
+      if (t < duration) completedRef.current = false;
     },
     [duration, lesson],
   );
@@ -110,18 +109,20 @@ export function LessonPlayer({ lesson, onComplete }: LessonPlayerProps) {
       const dt = ((ts - last) / 1000) * speed;
       last = ts;
       let next = timeRef.current + dt;
+      let pausedAtCheckpoint = false;
       // fire a checkpoint when the playhead crosses it
       for (let i = 0; i < checkpoints.length; i++) {
         const cp = checkpoints[i];
-        if (!firedRef.current.has(i) && cp.at > timeRef.current && cp.at <= next) {
+        if (!firedRef.current.has(i) && cp.at >= timeRef.current && cp.at <= next) {
           firedRef.current.add(i);
           next = cp.at;
+          pausedAtCheckpoint = true;
           setCheckpointIdx(i);
           setPlaying(false);
           break;
         }
       }
-      if (next >= duration) {
+      if (next >= duration && !pausedAtCheckpoint) {
         next = duration;
         setPlaying(false);
         if (!completedRef.current) {
@@ -141,7 +142,8 @@ export function LessonPlayer({ lesson, onComplete }: LessonPlayerProps) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement | null)?.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (checkpointIdx !== null || hotspotId !== null || showChapters) return;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'BUTTON') return;
       if (e.code === 'Space') {
         e.preventDefault();
         toggle();
@@ -153,11 +155,15 @@ export function LessonPlayer({ lesson, onComplete }: LessonPlayerProps) {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [toggle, seek]);
+  }, [toggle, seek, checkpointIdx, hotspotId, showChapters]);
 
   /* ----------------------- external control (video) ----------------------- */
   useEffect(() => {
-    window.__setLessonTime = (t: number) => seek(t);
+    window.__setLessonTime = (t: number) => {
+      setPlaying(false);
+      setCheckpointIdx(null);
+      seek(t);
+    };
     return () => {
       delete window.__setLessonTime;
     };
@@ -200,15 +206,16 @@ export function LessonPlayer({ lesson, onComplete }: LessonPlayerProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 z-10 flex items-center justify-center bg-slate-950/85 p-4 backdrop-blur-sm"
+              className="absolute inset-0 z-10 overflow-y-auto bg-slate-950/95 p-4 backdrop-blur-sm"
             >
               <motion.div
                 initial={{ scale: 0.92, y: 12 }}
                 animate={{ scale: 1, y: 0 }}
-                className="w-full max-w-lg rounded-2xl border border-cyan-400/30 bg-slate-900 p-5 shadow-[0_0_40px_rgba(34,211,238,0.15)]"
+                className="mx-auto w-full max-w-lg rounded-2xl border border-cyan-400/30 bg-slate-900 p-5 shadow-[0_0_40px_rgba(34,211,238,0.15)]"
               >
                 <div className="mb-3 text-xs font-bold tracking-widest text-cyan-300 uppercase">Ravi checks in</div>
                 <QuestionView
+                  key={checkpoint.question.id}
                   question={checkpoint.question}
                   onAnswer={() => {
                     setCheckpointIdx(null);
@@ -344,5 +351,6 @@ export function LessonPlayer({ lesson, onComplete }: LessonPlayerProps) {
 }
 
 function checkpointsFiredBefore(lesson: LessonDef, t: number): number[] {
-  return lesson.checkpoints.map((cp, i) => (cp.at < t ? i : -1)).filter((i) => i >= 0);
+  return [...lesson.checkpoints].sort((a, b) => a.at - b.at)
+    .map((cp, i) => (cp.at < t ? i : -1)).filter((i) => i >= 0);
 }

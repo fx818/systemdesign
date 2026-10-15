@@ -3,7 +3,7 @@ import { Flame, Lock, RotateCcw, Skull } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { levels } from '@/content/registry';
-import { useGame, isLevelUnlocked, pickFlashback, rankProgress, streakAlive, todayKey } from '@/game';
+import { useGame, FLASHBACK_SIZE, isLevelUnlocked, pickFlashback, rankProgress, streakAlive, todayKey } from '@/game';
 import type { LevelLike } from '@/game';
 import { ProgressBar, StarRow } from '@/components/ui';
 import { ArchitectureMap } from './ArchitectureMap';
@@ -28,12 +28,13 @@ export function HomeScreen() {
   const xp = useGame((s) => s.xp);
   const streak = useGame((s) => s.streak);
   const cards = useGame((s) => s.cards);
+  const flashbackLog = useGame((s) => s.flashbackLog);
 
   const { rank, next, ratio } = rankProgress(xp);
   const targetUsers = useUserCounter();
   const users = useCountUp(targetUsers);
   const today = todayKey();
-  const flashback = pickFlashback(cards, today);
+  const flashback = pickFlashback(cards, today, Math.max(0, FLASHBACK_SIZE - (flashbackLog[today] ?? 0)));
   const alive = streakAlive(streak, today);
 
   // The level path always shows 13 slots; registry levels fill them in.

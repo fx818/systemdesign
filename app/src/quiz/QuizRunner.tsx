@@ -102,6 +102,7 @@ export function QuizRunner({ questions, onFinish }: QuizRunnerProps) {
   const [ended, setEnded] = useState(false);
   const pendingRef = useRef<{ correct: boolean; xp: number } | null>(null);
   const emptyHandledRef = useRef(false);
+  const finishedRef = useRef(false);
 
   // Degenerate but handled: an empty interview finishes immediately.
   useEffect(() => {
@@ -154,7 +155,9 @@ export function QuizRunner({ questions, onFinish }: QuizRunnerProps) {
     const accuracy = questions.length ? correctCount / questions.length : 0;
     const wrong = results.filter((r) => !r.correct);
 
-    const finish = () =>
+    const finish = () => {
+      if (finishedRef.current) return;
+      finishedRef.current = true;
       onFinish({
         correct: correctCount,
         total: questions.length,
@@ -164,6 +167,7 @@ export function QuizRunner({ questions, onFinish }: QuizRunnerProps) {
         maxCombo,
         accuracy,
       });
+    };
 
     return (
       <Card accent="emerald" className="flex flex-col gap-4" data-testid="quiz-end">

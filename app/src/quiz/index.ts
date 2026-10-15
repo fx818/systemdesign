@@ -1,7 +1,7 @@
 /**
  * `@/quiz` — the interview-round engine.
  *
- * Public API (relied on by OC-shell's player/quizBridge):
+ * Public API used directly by the lesson player and interview screen:
  *   <QuestionView question onAnswer(correct)/>
  *   <QuizRunner questions onFinish({correct,total,xp,perQuestion,...})/>
  *   grade(question, response) => boolean   (pure, deterministic)

@@ -109,7 +109,10 @@ export function ArchitectureMap() {
   const progress = useGame((s) => s.progress);
 
   const boss = levels.find((l) => l.boss);
-  const graph = boss?.mission.config.start ?? FALLBACK_GRAPH;
+  // Launch Night starts with users only. Use the full design for the HQ map
+  // until a boss definition actually includes the finished architecture.
+  const graph = boss && boss.mission.config.start.nodes.some((node) => node.kind === 'web')
+    ? boss.mission.config.start : FALLBACK_GRAPH;
 
   const completedNumbers = useMemo(
     () => new Set(levels.filter((l) => isDone(progress, l)).map((l) => l.number)),

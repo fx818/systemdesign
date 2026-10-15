@@ -38,6 +38,9 @@ export interface GameState {
   cards: Record<string, CardState>;
   /** level id -> latest mission outcome (feeds the debrief stars). */
   missionResults: Record<string, MissionResultSummary>;
+  /** Latest interview, including hearts needed for three-star eligibility. */
+  quizResults: Record<string, { score: number; heartsLeft: number }>;
+  miniGameResults: Record<string, Record<string, number>>;
   /** local date key -> flashback reviews done that day. */
   flashbackLog: Record<string, number>;
 
@@ -50,7 +53,8 @@ export interface GameState {
   resetProgress: () => void;
 
   /* ------------------------- supporting actions -------------------------- */
-  recordQuizResult: (levelId: string, score01: number) => void;
+  recordQuizResult: (levelId: string, score01: number, heartsLeft?: number) => void;
+  recordMiniGameResult: (levelId: string, gameId: string, score: number) => void;
   recordMissionResult: (levelId: string, result: MissionResultSummary) => void;
   useHint: (levelId: string) => void;
   ingestCards: (levelId: string, cards: readonly { front: string; back: string }[]) => void;
@@ -72,6 +76,8 @@ const initialState = () => ({
   credits: STARTING_CREDITS,
   cards: {} as Record<string, CardState>,
   missionResults: {} as Record<string, MissionResultSummary>,
+  quizResults: {} as GameState['quizResults'],
+  miniGameResults: {} as GameState['miniGameResults'],
   flashbackLog: {} as Record<string, number>,
 });
 
@@ -123,14 +129,21 @@ export const useGame = create<GameState>()(
 
       resetProgress: () => set(initialState()),
 
-      recordQuizResult: (levelId, score01) =>
+      recordQuizResult: (levelId, score01, heartsLeft = 3) =>
         set((s) => {
           const lp = s.progress[levelId] ?? emptyLevelProgress();
           const clamped = Math.max(0, Math.min(1, score01));
           return {
             progress: { ...s.progress, [levelId]: { ...lp, bestQuiz: Math.max(lp.bestQuiz, clamped) } },
+            quizResults: { ...s.quizResults, [levelId]: { score: clamped, heartsLeft: Math.max(0, Math.min(3, heartsLeft)) } },
           };
         }),
+
+      recordMiniGameResult: (levelId, gameId, score) =>
+        set((s) => ({ miniGameResults: {
+          ...s.miniGameResults,
+          [levelId]: { ...s.miniGameResults[levelId], [gameId]: Math.max(0, Math.min(1, score)) },
+        } })),
 
       recordMissionResult: (levelId, result) =>
         set((s) => ({ missionResults: { ...s.missionResults, [levelId]: result } })),
@@ -162,7 +175,8 @@ export const useGame = create<GameState>()(
 );
 
 /* ------------------------------ selectors -------------------------------- */
+const EMPTY_LEVEL_PROGRESS = emptyLevelProgress();
 export const selectLevelProgress = (levelId: string) => (s: GameState) =>
-  s.progress[levelId] ?? emptyLevelProgress();
+  s.progress[levelId] ?? EMPTY_LEVEL_PROGRESS;
 export const selectHintsUsed = (levelId: string) => (s: GameState) => s.hintsUsed[levelId] ?? 0;
 export const getGameState = () => useGame.getState();

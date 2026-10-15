@@ -1,7 +1,9 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { Home, RotateCcw, UserRound, Video } from 'lucide-react';
+import { useEffect } from 'react';
 import { Navigate, NavLink, Outlet, Route, Routes, useLocation } from 'react-router-dom';
-import { Toaster } from '@/components/ui';
+import { toast, Toaster } from '@/components/ui';
+import { useGame } from '@/game';
 import { RenderScene } from '@/player';
 import { DebriefScreen } from '@/screens/DebriefScreen';
 import { HomeScreen } from '@/screens/HomeScreen';
@@ -57,6 +59,10 @@ function Nav() {
 
 function Layout() {
   const location = useLocation();
+  useEffect(() => useGame.subscribe((state, previous) => {
+    const gained = state.xp - previous.xp;
+    if (gained > 0) toast(`+${gained} XP`, { icon: 'sparkles', tone: 'xp' });
+  }), []);
   return (
     <div className="flex min-h-screen flex-col">
       <Nav />

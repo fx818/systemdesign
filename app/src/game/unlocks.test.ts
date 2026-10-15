@@ -25,8 +25,11 @@ describe('unlocks', () => {
   it('boss requires every non-boss level done', () => {
     const partial = { L01: { stars: 3 }, L02: { stars: 1 }, L03: { stars: 0 } };
     expect(isLevelUnlocked(levels[3], levels, partial)).toBe(false);
-    const full = { L01: { stars: 1 }, L02: { stars: 1 }, L03: { stars: 1 } };
-    expect(isLevelUnlocked(levels[3], levels, full)).toBe(true);
+    const all = Array.from({ length: 13 }, (_, i) => ({ id: `L${String(i + 1).padStart(2, '0')}`, number: i + 1, boss: i === 12 }));
+    const full = Object.fromEntries(all.slice(0, 12).map((level) => [level.id, { stars: 1 }]));
+    expect(isLevelUnlocked(all[12], all, full)).toBe(true);
+    expect(isLevelUnlocked(levels[3], levels, full)).toBe(false); // missing content is still locked
+    expect(isLevelUnlocked(all[12], [all[12]], {})).toBe(false);
   });
 
   it('stays locked when the previous level is missing from the registry', () => {

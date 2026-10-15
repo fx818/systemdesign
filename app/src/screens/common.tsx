@@ -1,6 +1,7 @@
-import type { ReactNode } from 'react';
+import { Fragment, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { getLevel } from '@/content/registry';
+import { getLevel, levels } from '@/content/registry';
+import { isLevelUnlocked, useGame } from '@/game';
 import type { LevelDef } from '@/types/content';
 import { Button, Card } from '@/components/ui';
 
@@ -11,6 +12,7 @@ import { Button, Card } from '@/components/ui';
  */
 export function LevelGate({ children }: { children: (level: LevelDef) => ReactNode }) {
   const { id } = useParams<{ id: string }>();
+  const progress = useGame((s) => s.progress);
   const level = id ? getLevel(id) : undefined;
   if (!level) {
     return (
@@ -30,5 +32,12 @@ export function LevelGate({ children }: { children: (level: LevelDef) => ReactNo
       </div>
     );
   }
-  return <>{children(level)}</>;
+  if (!isLevelUnlocked(level, levels, progress)) {
+    return <Card className="mx-auto max-w-lg text-center">
+      <h1 className="text-xl font-bold text-slate-100">Level locked</h1>
+      <p className="my-3 text-slate-400">Earn a star in the preceding missions to unlock {level.title}.</p>
+      <Link to="/">Back to HQ</Link>
+    </Card>;
+  }
+  return <Fragment key={level.id}>{children(level)}</Fragment>;
 }

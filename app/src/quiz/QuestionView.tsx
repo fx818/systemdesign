@@ -71,9 +71,11 @@ export function QuestionView({ question, onAnswer, onSubmit, xpEarned }: Questio
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key !== 'Enter' || e.ctrlKey || e.metaKey || e.altKey) return;
-      const target = e.target as HTMLElement | null;
-      // Let a focused button handle its own Enter (refs already dedupe).
-      if (target?.tagName === 'BUTTON') return;
+      const target = e.target instanceof Element ? e.target : null;
+      // Transport buttons retain native activation; Enter on an answer row
+      // checks the selected response, including keyboard-sorted questions.
+      if (target?.closest('[data-testid="submit"], [data-testid="continue"]')) return;
+      if (!submittedRef.current && !isComplete(question, response)) return;
       e.preventDefault();
       if (!submittedRef.current) {
         if (!isComplete(question, response)) return;
@@ -192,7 +194,7 @@ export function QuestionView({ question, onAnswer, onSubmit, xpEarned }: Questio
         {question.prompt}
       </h3>
 
-      {body()}
+      <div key={question.id}>{body()}</div>
 
       {!locked && (
         <div className="mt-4 flex justify-end">

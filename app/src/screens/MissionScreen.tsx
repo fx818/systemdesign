@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/game';
 import type { LevelDef } from '@/types/content';
@@ -24,6 +24,8 @@ function Mission({ level }: { level: LevelDef }) {
   const recordMissionResult = useGame((s) => s.recordMissionResult);
   const addXp = useGame((s) => s.addXp);
   const resetLives = useGame((s) => s.resetLives);
+  const loseLife = useGame((s) => s.loseLife);
+  const setCredits = useGame((s) => s.setCredits);
   const useHint = useGame((s) => s.useHint);
   const lives = useGame((s) => s.lives);
   const hintsUsed = useGame((s) => s.hintsUsed[level.id] ?? 0);
@@ -32,20 +34,25 @@ function Mission({ level }: { level: LevelDef }) {
   const [result, setResult] = useState<SimRunResult | null>(null);
   const [showHints, setShowHints] = useState(false);
   const finishedRef = useRef(false);
+  useEffect(() => {
+    resetLives();
+    setCredits(level.mission.config.budget);
+  }, [resetLives, setCredits, level.mission.config.budget]);
 
   const finish = useCallback(
     (r: SimRunResult) => {
       if (finishedRef.current) return;
       finishedRef.current = true;
       recordMissionResult(level.id, {
-        goalsMet: r.goalsMet ?? true,
-        withinBudget: r.withinBudget ?? true,
+        goalsMet: r.goalsMet ?? false,
+        withinBudget: r.withinBudget ?? false,
       });
-      completeStep(level.id, 'mission');
-      addXp(r.xp ?? 100);
+      if (r.goalsMet) completeStep(level.id, 'mission');
+      addXp(r.xp ?? (r.goalsMet ? 100 : 0));
+      if (typeof r.cost === 'number') setCredits(level.mission.config.budget - r.cost);
       setResult(r);
     },
-    [recordMissionResult, completeStep, addXp, level.id],
+    [recordMissionResult, completeStep, addXp, level.id, level.mission.config.budget, setCredits],
   );
 
   const startMission = () => {
@@ -80,7 +87,21 @@ function Mission({ level }: { level: LevelDef }) {
           <Dialogue lines={level.mission.brief} onDone={startMission} />
         </Card>
       ) : (
-        <SimRunnerBridge config={level.mission.config} mode="mission" onFinish={finish} />
+        <SimRunnerBridge
+          config={level.mission.config}
+          mode="mission"
+          onFinish={finish}
+          hints={level.mission.hints}
+          onHint={takeHint}
+          hintsUsed={hintsUsed}
+          onLifeLost={loseLife}
+          onRetry={() => {
+            resetLives();
+            setCredits(level.mission.config.budget);
+            finishedRef.current = false;
+            setResult(null);
+          }}
+        />
       )}
 
       {/* mission result */}

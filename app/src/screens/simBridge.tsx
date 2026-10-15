@@ -1,5 +1,6 @@
 import { Component, lazy, Suspense, type ComponentType, type ReactNode } from 'react';
 import type { SimConfig } from '@/types/content';
+import type { SimRunnerProps as RunnerProps } from '../sim/SimRunner';
 import { Card } from '@/components/ui';
 
 /** Loose result shape — OC-sim owns the exact type; the shell only needs these. */
@@ -7,10 +8,12 @@ export interface SimRunResult {
   goalsMet?: boolean;
   withinBudget?: boolean;
   xp?: number;
-  [key: string]: unknown;
+  passed?: boolean;
+  cost?: number;
+  livesLeft?: number;
 }
 
-export interface SimRunnerProps {
+export interface SimRunnerProps extends Pick<RunnerProps, 'tasks' | 'hints' | 'hintsUsed' | 'onHint' | 'onLifeLost' | 'onRetry'> {
   config: SimConfig;
   mode: 'lab' | 'mission';
   onFinish: (result: SimRunResult) => void;
@@ -62,7 +65,11 @@ export function SimRunnerBridge(props: SimRunnerProps) {
           <Card className="flex items-center justify-center py-16 text-slate-500">Booting the simulator&hellip;</Card>
         }
       >
-        <LazySimRunner {...props} />
+        <LazySimRunner {...props} onFinish={(result) => props.onFinish({
+          ...result,
+          goalsMet: result.goalsMet ?? result.passed ?? false,
+          withinBudget: result.withinBudget ?? (typeof result.cost === 'number' && result.cost <= props.config.budget),
+        })} />
       </Suspense>
     </SimErrorBoundary>
   );
