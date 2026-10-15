@@ -108,8 +108,9 @@ export interface MiniGameDef { id: string; title: string; intro: string; Compone
 
 /* --------------------------------- Level ---------------------------------- */
 export interface LevelDef {
-  id: string;              // 'L01'
-  number: number;          // 1..13
+  id: string;              // 'L01' (chapter 1) | 'C2L01' (chapter 2) ...
+  chapter?: number;        // defaults to 1
+  number: number;          // position within its chapter (1-based)
   title: string;           // 'Hello, World'
   subtitle: string;
   users: number;           // user-counter milestone reached on completion
@@ -124,4 +125,15 @@ export interface LevelDef {
   cards: { front: string; back: string }[]; // key takeaways -> spaced repetition
   debrief: DialogueLine[];
   boss?: boolean;
+}
+
+/* -------------------------------- Chapters -------------------------------- */
+export interface ChapterDef {
+  number: number;
+  title: string;
+  subtitle: string;
+  pages: [number, number];
+  color: string;            // accent hex
+  icon: string;             // lucide icon name
+  available: boolean;       // false = "coming soon" card
 }
